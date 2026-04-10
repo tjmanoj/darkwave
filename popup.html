@@ -78,6 +78,23 @@
     <p class="native-dark-badge" id="nativeDarkBadge" style="display:none">
       ⚡ This site has its own dark mode — DarkWave skipped auto-apply. Toggle to force.
     </p>
+    <button class="blacklist-btn" id="blacklistBtn">
+      <svg viewBox="0 0 20 20" fill="currentColor" class="bl-icon">
+        <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524L13.477 14.89zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
+      </svg>
+      <span id="blacklistBtnLabel">Blacklist this site</span>
+      <kbd>Alt+Shift+B</kbd>
+    </button>
+  </section>
+
+  <!-- ── BLACKLIST ────────────────────────────────────── -->
+  <section class="blacklist-section card" id="blacklistSection">
+    <div class="blacklist-header">
+      <p class="section-title" style="margin:0">Blacklisted Sites</p>
+      <span class="bl-count" id="blCount">0</span>
+    </div>
+    <p class="bl-empty" id="blEmpty">No sites blacklisted yet.</p>
+    <ul class="bl-list" id="blList"></ul>
   </section>
 
   <!-- ── SLIDERS ────────────────────────────────────── -->
@@ -181,7 +198,7 @@
 
   <!-- ── FOOTER ─────────────────────────────────────── -->
   <footer class="footer">
-    <span>☾ DarkWave &nbsp;·&nbsp; <kbd>Alt+Shift+D</kbd> to toggle</span>
+    <span>☾ DarkWave &nbsp;·&nbsp; <kbd>Alt+Shift+D</kbd> toggle &nbsp;·&nbsp; <kbd>Alt+Shift+B</kbd> blacklist</span>
     <a href="#" id="resetBtn" class="reset-link">Reset</a>
   </footer>
 

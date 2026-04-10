@@ -191,6 +191,7 @@
   }
 
   function resolveEnabled(s, hostname) {
+    if (s.blacklist?.includes(hostname)) return false;
     const site = s.siteSettings?.[hostname];
     if (site?.overridden) return site.enabled;
     return s.globalEnabled ?? true;

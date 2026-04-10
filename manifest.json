@@ -54,6 +54,14 @@
         "linux": "Alt+Shift+D"
       },
       "description": "Toggle DarkWave dark mode on/off"
+    },
+    "blacklist-site": {
+      "suggested_key": {
+        "default": "Alt+Shift+B",
+        "mac": "Alt+Shift+B",
+        "linux": "Alt+Shift+B"
+      },
+      "description": "Blacklist / un-blacklist the current site"
     }
   }
 }

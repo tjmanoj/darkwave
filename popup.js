@@ -7,6 +7,7 @@ const DEFAULTS = {
   brightness: 85,
   contrast: 90,
   siteSettings: {},
+  blacklist: [],
   scheduleEnabled: false,
   scheduleStart: '20:00',
   scheduleEnd: '07:00',
@@ -26,6 +27,7 @@ let currentHostname = '';
   const stored = await chrome.storage.local.get(null);
   settings = { ...DEFAULTS, ...stored };
   settings.siteSettings = settings.siteSettings || {};
+  settings.blacklist = settings.blacklist || [];
 
   // Get active tab directly — no messaging needed
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -45,6 +47,7 @@ let currentHostname = '';
     for (const [key, { newValue }] of Object.entries(changes)) {
       if (Object.prototype.hasOwnProperty.call(DEFAULTS, key) || key === 'siteSettings') {
         settings[key] = newValue;
+        if (key === 'blacklist') settings.blacklist = newValue || [];
         needsRender = true;
       }
     }
@@ -57,6 +60,7 @@ let currentHostname = '';
 function renderAll() {
   renderGlobalToggle();
   renderSiteSection(); // async, non-blocking
+  renderBlacklist();
   renderSliders();
   renderOptions();
   renderSchedule();
@@ -114,6 +118,74 @@ async function renderSiteSection() {
   }
 }
 
+function renderBlacklist() {
+  const bl = settings.blacklist || [];
+  const blacklistSection = $('blacklistSection');
+  const blList = $('blList');
+  const blEmpty = $('blEmpty');
+  const blCount = $('blCount');
+
+  // Update count badge
+  blCount.textContent = bl.length;
+
+  // Update blacklist button for current site
+  if (currentHostname) {
+    const isBlacklisted = bl.includes(currentHostname);
+    const btn = $('blacklistBtn');
+    const label = $('blacklistBtnLabel');
+    if (isBlacklisted) {
+      btn.classList.add('active');
+      label.textContent = 'Remove from blacklist';
+    } else {
+      btn.classList.remove('active');
+      label.textContent = 'Blacklist this site';
+    }
+  }
+
+  // Render the list
+  blEmpty.style.display = bl.length === 0 ? '' : 'none';
+  blList.innerHTML = '';
+
+  for (const host of bl) {
+    const li = document.createElement('li');
+    li.className = 'bl-item';
+
+    // Favicon
+    const img = document.createElement('img');
+    img.className = 'bl-item-favicon';
+    img.src = `https://www.google.com/s2/favicons?sz=16&domain=${host}`;
+    img.onerror = () => {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'bl-item-favicon-placeholder';
+      placeholder.innerHTML = `<svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16A8 8 0 0010 2zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.56-.5-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.97-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.56.5.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clip-rule="evenodd"/></svg>`;
+      img.replaceWith(placeholder);
+    };
+
+    // Hostname label
+    const span = document.createElement('span');
+    span.className = 'bl-item-host';
+    span.textContent = host;
+
+    // Remove button
+    const rmBtn = document.createElement('button');
+    rmBtn.className = 'bl-remove-btn';
+    rmBtn.title = `Remove ${host} from blacklist`;
+    rmBtn.innerHTML = `<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>`;
+    rmBtn.addEventListener('click', async () => {
+      await chrome.runtime.sendMessage({ type: 'REMOVE_BLACKLIST_ENTRY', payload: { hostname: host } });
+      settings.blacklist = settings.blacklist.filter(h => h !== host);
+      renderBlacklist();
+      renderSiteSection();
+      toast(`✅ Removed ${host} from blacklist`);
+    });
+
+    li.appendChild(img);
+    li.appendChild(span);
+    li.appendChild(rmBtn);
+    blList.appendChild(li);
+  }
+}
+
 function renderSliders() {
   $('brightnessSlider').value = settings.brightness;
   $('brightnessVal').textContent = settings.brightness + '%';
@@ -151,6 +223,21 @@ function bindEvents() {
     renderSiteSection();
     await save();
     toast(settings.globalEnabled ? '🌙 Dark mode on' : '☀️ Dark mode off');
+  });
+
+  // Blacklist current site button
+  $('blacklistBtn').addEventListener('click', async () => {
+    if (!currentHostname) return;
+    const res = await chrome.runtime.sendMessage({
+      type: 'TOGGLE_BLACKLIST',
+      payload: { hostname: currentHostname },
+    });
+    settings.blacklist = res.blacklist || [];
+    renderBlacklist();
+    renderSiteSection();
+    toast(res.nowBlacklisted
+      ? `🚫 Blacklisted: ${currentHostname}`
+      : `✅ Removed from blacklist: ${currentHostname}`);
   });
 
   // Site toggle
@@ -233,7 +320,7 @@ function bindEvents() {
   // Reset
   $('resetBtn').addEventListener('click', async (e) => {
     e.preventDefault();
-    settings = { ...DEFAULTS, siteSettings: {} };
+    settings = { ...DEFAULTS, siteSettings: {}, blacklist: [] };
     renderAll();
     await save();
     toast('↺ Settings reset to defaults');

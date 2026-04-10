@@ -5,6 +5,7 @@ const DEFAULT_SETTINGS = {
   brightness: 85,
   contrast: 90,
   siteSettings: {},
+  blacklist: [],
   scheduleEnabled: false,
   scheduleStart: '20:00',
   scheduleEnd: '07:00',
@@ -123,10 +124,103 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     }
     return true;
   }
+
+  if (message.type === 'TOGGLE_BLACKLIST') {
+    const current = await chrome.storage.local.get(null);
+    const hostname = message.payload.hostname;
+    const blacklist = current.blacklist ? [...current.blacklist] : [];
+    const idx = blacklist.indexOf(hostname);
+    const nowBlacklisted = idx === -1;
+    if (nowBlacklisted) {
+      blacklist.push(hostname);
+    } else {
+      blacklist.splice(idx, 1);
+    }
+    const updated = { ...current, blacklist };
+    await chrome.storage.local.set(updated);
+
+    // Remove dark mode immediately if we just blacklisted, re-apply if un-blacklisted
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab) {
+      const shouldApply = nowBlacklisted ? false : resolveEnabled(updated, hostname);
+      await applyToTab(tab.id, shouldApply, updated);
+    }
+    sendResponse({ success: true, blacklist, nowBlacklisted });
+    return true;
+  }
+
+  if (message.type === 'REMOVE_BLACKLIST_ENTRY') {
+    const current = await chrome.storage.local.get(null);
+    const hostname = message.payload.hostname;
+    const blacklist = (current.blacklist || []).filter(h => h !== hostname);
+    const updated = { ...current, blacklist };
+    await chrome.storage.local.set(updated);
+    // Re-apply to any open tabs for this hostname
+    const tabs = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] });
+    for (const tab of tabs) {
+      try {
+        if (getHostname(tab.url) === hostname) {
+          await applyToTab(tab.id, resolveEnabled(updated, hostname), updated);
+        }
+      } catch (_) {}
+    }
+    sendResponse({ success: true, blacklist });
+    return true;
+  }
 });
 
-// ── Bug 3 Fix: Keyboard shortcut handler ─────────────────────────────────────
+// ── Keyboard shortcut handler ────────────────────────────────────────────────
 chrome.commands.onCommand.addListener(async (command) => {
+  if (command === 'blacklist-site') {
+    const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!activeTab?.url) return;
+    const hostname = getHostname(activeTab.url);
+    if (!hostname) return;
+
+    const current = await chrome.storage.local.get(null);
+    const blacklist = current.blacklist ? [...current.blacklist] : [];
+    const idx = blacklist.indexOf(hostname);
+    const nowBlacklisted = idx === -1;
+    if (nowBlacklisted) blacklist.push(hostname);
+    else blacklist.splice(idx, 1);
+
+    const updated = { ...current, blacklist };
+    await chrome.storage.local.set(updated);
+
+    const shouldApply = nowBlacklisted ? false : resolveEnabled(updated, hostname);
+    await applyToTab(activeTab.id, shouldApply, updated);
+
+    // Toast on page
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: activeTab.id },
+        func: (label) => {
+          const e = document.getElementById('__darkwave_toast__');
+          if (e) e.remove();
+          const t = document.createElement('div');
+          t.id = '__darkwave_toast__';
+          t.textContent = label;
+          Object.assign(t.style, {
+            position: 'fixed', bottom: '24px', right: '24px',
+            background: '#13131c', color: '#e8e8f0',
+            fontFamily: 'system-ui, sans-serif', fontSize: '13px',
+            fontWeight: '600', padding: '10px 18px',
+            borderRadius: '999px', zIndex: '2147483647',
+            border: '1px solid rgba(255,255,255,0.12)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            opacity: '0', transition: 'opacity 0.2s ease',
+            pointerEvents: 'none',
+          });
+          document.body.appendChild(t);
+          requestAnimationFrame(() => { t.style.opacity = '1'; });
+          setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+        },
+        args: [nowBlacklisted ? `🚫 Blacklisted: ${hostname}` : `✅ Un-blacklisted: ${hostname}`],
+      });
+    } catch (_) {}
+    return;
+  }
+
   if (command !== 'toggle-darkwave') return;
 
   const settings = await chrome.storage.local.get(null);
@@ -253,6 +347,7 @@ function getHostname(url) {
 }
 
 function resolveEnabled(settings, hostname) {
+  if (settings.blacklist?.includes(hostname)) return false;
   const site = settings.siteSettings?.[hostname];
   if (site?.overridden) return site.enabled;
   return settings.globalEnabled;
