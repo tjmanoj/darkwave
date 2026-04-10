@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DarkWave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+  <!-- ── HEADER ─────────────────────────────────────── -->
+  <header class="header">
+    <div class="logo">
+      <svg class="logo-icon" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="13" stroke="url(#lg1)" stroke-width="1.5"/>
+        <path d="M14 4 C8 4 4 8.5 4 14 C4 19.5 8.5 24 14 24 C10 20 10 8 14 4Z" fill="url(#lg2)"/>
+        <defs>
+          <linearGradient id="lg1" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#a78bfa"/>
+            <stop offset="100%" stop-color="#38bdf8"/>
+          </linearGradient>
+          <linearGradient id="lg2" x1="4" y1="4" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#a78bfa"/>
+            <stop offset="100%" stop-color="#38bdf8"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span class="logo-text">Dark<em>Wave</em></span>
+    </div>
+    <div class="header-right">
+      <span class="version">v1.0</span>
+    </div>
+  </header>
+
+  <!-- ── GLOBAL TOGGLE ──────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-left">
+        <p class="hero-label">Global Dark Mode</p>
+        <p class="hero-sub" id="globalStatus">Enabled everywhere</p>
+      </div>
+      <label class="mega-toggle" id="globalToggleLabel">
+        <input type="checkbox" id="globalToggle" />
+        <span class="mega-thumb">
+          <svg class="thumb-icon moon" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+          </svg>
+          <svg class="thumb-icon sun" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+          </svg>
+        </span>
+      </label>
+    </div>
+  </section>
+
+  <!-- ── CURRENT SITE ───────────────────────────────── -->
+  <section class="site-section card" id="siteCard">
+    <div class="site-row">
+      <div class="site-info">
+        <div class="site-favicon" id="siteFavicon">
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16A8 8 0 0010 2zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.56-.5-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.97-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.56.5.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <p class="site-name" id="siteName">Loading…</p>
+          <p class="site-hostname" id="siteHostname">—</p>
+        </div>
+      </div>
+      <label class="mini-toggle">
+        <input type="checkbox" id="siteToggle" />
+        <span class="mini-thumb"></span>
+      </label>
+    </div>
+    <p class="site-note" id="siteNote">Following global setting</p>
+    <p class="native-dark-badge" id="nativeDarkBadge" style="display:none">
+      ⚡ This site has its own dark mode — DarkWave skipped auto-apply. Toggle to force.
+    </p>
+  </section>
+
+  <!-- ── SLIDERS ────────────────────────────────────── -->
+  <section class="sliders card">
+    <div class="slider-row">
+      <div class="slider-label">
+        <svg viewBox="0 0 20 20" fill="currentColor" class="s-icon">
+          <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.298.057-.591.123-.877a3 3 0 10-4.247 0c.066.286.108.579.124.877h4z"/>
+        </svg>
+        <span>Brightness</span>
+      </div>
+      <div class="slider-control">
+        <input type="range" id="brightnessSlider" min="50" max="100" step="1" class="slider" />
+        <span class="slider-val" id="brightnessVal">85%</span>
+      </div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-label">
+        <svg viewBox="0 0 20 20" fill="currentColor" class="s-icon">
+          <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z" clip-rule="evenodd"/>
+        </svg>
+        <span>Contrast</span>
+      </div>
+      <div class="slider-control">
+        <input type="range" id="contrastSlider" min="50" max="120" step="1" class="slider" />
+        <span class="slider-val" id="contrastVal">90%</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── OPTIONS ────────────────────────────────────── -->
+  <section class="options card">
+    <p class="section-title">Options</p>
+    <label class="option-row">
+      <div class="opt-info">
+        <span class="opt-name">Protect Images</span>
+        <span class="opt-desc">Re-invert images so colors look natural</span>
+      </div>
+      <label class="tiny-toggle">
+        <input type="checkbox" id="imageProtection" />
+        <span class="tiny-thumb"></span>
+      </label>
+    </label>
+    <label class="option-row">
+      <div class="opt-info">
+        <span class="opt-name">Smooth Transitions</span>
+        <span class="opt-desc">Animate when toggling dark mode</span>
+      </div>
+      <label class="tiny-toggle">
+        <input type="checkbox" id="smoothTransition" />
+        <span class="tiny-thumb"></span>
+      </label>
+    </label>
+    <label class="option-row">
+      <div class="opt-info">
+        <span class="opt-name">Auto Schedule</span>
+        <span class="opt-desc">Auto-enable between set hours</span>
+      </div>
+      <label class="tiny-toggle">
+        <input type="checkbox" id="scheduleEnabled" />
+        <span class="tiny-thumb"></span>
+      </label>
+    </label>
+
+    <!-- Schedule times -->
+    <div class="schedule-row" id="scheduleRow">
+      <div class="time-field">
+        <label class="time-label">From</label>
+        <input type="time" id="scheduleStart" class="time-input" value="20:00" />
+      </div>
+      <div class="time-sep">→</div>
+      <div class="time-field">
+        <label class="time-label">To</label>
+        <input type="time" id="scheduleEnd" class="time-input" value="07:00" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PRESETS ────────────────────────────────────── -->
+  <section class="presets card">
+    <p class="section-title">Quick Presets</p>
+    <div class="preset-grid">
+      <button class="preset-btn" data-brightness="85" data-contrast="90" data-name="Balanced">
+        <span class="preset-icon">🌙</span>
+        <span>Balanced</span>
+      </button>
+      <button class="preset-btn" data-brightness="70" data-contrast="95" data-name="Midnight">
+        <span class="preset-icon">🌑</span>
+        <span>Midnight</span>
+      </button>
+      <button class="preset-btn" data-brightness="92" data-contrast="80" data-name="Soft">
+        <span class="preset-icon">🌫️</span>
+        <span>Soft</span>
+      </button>
+      <button class="preset-btn" data-brightness="60" data-contrast="110" data-name="Abyss">
+        <span class="preset-icon">⬛</span>
+        <span>Abyss</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ─────────────────────────────────────── -->
+  <footer class="footer">
+    <span>☾ DarkWave &nbsp;·&nbsp; <kbd>Alt+Shift+D</kbd> to toggle</span>
+    <a href="#" id="resetBtn" class="reset-link">Reset</a>
+  </footer>
+
+  <!-- ── TOAST ──────────────────────────────────────── -->
+  <div class="toast" id="toast"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

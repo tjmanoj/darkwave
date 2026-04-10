@@ -1,0 +1,7 @@
+/* DarkWave — content.css  
+   Loaded at document_start as a content_script CSS.
+   Provides a fallback dark background before JS evaluates.
+   Gets overridden by content.js once settings are known.
+*/
+
+/* intentionally minimal — JS handles the real styling */
