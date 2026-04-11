@@ -41,6 +41,12 @@
       if (alreadyDark && !hasExplicitOverride) {
         // Page has its own dark mode — store this so popup can show a hint
         chrome.storage.local.set({ [`nativeDark:${hostname}`]: true });
+        // Auto-add to blacklist so it persists across reloads
+        const bl = settings.blacklist || [];
+        if (!bl.includes(hostname)) {
+          bl.push(hostname);
+          chrome.storage.local.set({ blacklist: bl });
+        }
         return;
       }
       chrome.storage.local.set({ [`nativeDark:${hostname}`]: false });
@@ -197,28 +203,63 @@
     return s.globalEnabled ?? true;
   }
 
-  // Bug 4: Detect if the page is natively dark (background luminance < 30%)
-  // Checks html and body background color after DOMContentLoaded.
+  // Detect if the page is natively dark using multiple signals.
+  // Returns true if ANY strong signal indicates the page is already in dark mode.
   function isPageNativelyDark() {
-    const targets = [document.documentElement, document.body];
-    for (const el of targets) {
-      if (!el) continue;
-      const bg = window.getComputedStyle(el).backgroundColor;
-      const match = bg.match(/\d+(\.\d+)?/g);
-      if (!match || match.length < 3) continue;
-      const [r, g, b] = match.map(Number);
-      // Skip transparent (alpha=0) or unset backgrounds
-      if (match[3] !== undefined && parseFloat(match[3]) < 0.1) continue;
-      if (r === 0 && g === 0 && b === 0) continue; // default black = not set
-      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-      if (luminance < 0.25) return true; // dark background found
+    // ── Signal 1: <meta name="color-scheme" content="dark"> ──
+    const metaCS = document.querySelector('meta[name="color-scheme"]');
+    if (metaCS) {
+      const val = metaCS.content.toLowerCase();
+      // "dark" alone, or "dark light" (dark-first = preference)
+      if (val === 'dark' || val.startsWith('dark')) return true;
     }
 
-    // Also check meta color-scheme and media prefers-color-scheme matching
-    const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
-    if (metaColorScheme?.content?.includes('dark')) {
-      // Page explicitly declares dark support and may already be in dark mode
-      // Only skip if the page also looks dark (checked above), so we trust the luminance check
+    // ── Signal 2: <html> or <body> attributes used by popular sites ──
+    const html = document.documentElement;
+    const body = document.body;
+    const attrChecks = [
+      html.getAttribute('data-theme'),
+      html.getAttribute('data-color-mode'),
+      html.getAttribute('data-dark'),
+      html.getAttribute('class'),
+      html.getAttribute('style'),
+      body?.getAttribute('data-theme'),
+      body?.getAttribute('data-color-mode'),
+      body?.getAttribute('class'),
+    ];
+    const darkPatterns = /\b(dark|night|dim|black)\b/i;
+    for (const attr of attrChecks) {
+      if (attr && darkPatterns.test(attr)) return true;
+    }
+
+    // YouTube: <html dark> attribute (boolean)
+    if (html.hasAttribute('dark')) return true;
+
+    // Reddit: <html lang=".." class="...theme-dark...">
+    // Already caught by class check above
+
+    // ── Signal 3: CSS color-scheme property on root ──
+    const rootCS = window.getComputedStyle(html).colorScheme;
+    if (rootCS && /dark/i.test(rootCS)) return true;
+
+    // ── Signal 4: Background luminance of html, body, or common wrappers ──
+    const bgTargets = [html, body];
+    // Also check first-level wrapper divs (many SPAs use them)
+    const firstDiv = body?.querySelector(':scope > div');
+    if (firstDiv) bgTargets.push(firstDiv);
+
+    for (const el of bgTargets) {
+      if (!el) continue;
+      const bg = window.getComputedStyle(el).backgroundColor;
+      const match = bg.match(/[\d.]+/g);
+      if (!match || match.length < 3) continue;
+      const [r, g, b] = match.map(Number);
+      // Skip transparent
+      if (match[3] !== undefined && parseFloat(match[3]) < 0.1) continue;
+      // Skip pure black (often means "not set")
+      if (r === 0 && g === 0 && b === 0 && (match[3] === undefined)) continue;
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      if (luminance < 0.22) return true;
     }
 
     return false;

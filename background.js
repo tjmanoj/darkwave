@@ -44,7 +44,7 @@ chrome.runtime.onInstalled.addListener(async () => {
     try {
       const hostname = getHostname(tab.url);
       const shouldApply = resolveEnabled(merged, hostname);
-      await applyToTab(tab.id, shouldApply, merged);
+      await applyToTab(tab.id, shouldApply, merged, hostname);
     } catch (_) {}
   }
 });
@@ -58,7 +58,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   const hostname = getHostname(tab.url);
   const shouldApply = resolveEnabled(settings, hostname);
 
-  await applyToTab(tabId, shouldApply, settings);
+  await applyToTab(tabId, shouldApply, settings, hostname);
 });
 
 // Listen for messages from popup or content scripts
@@ -81,7 +81,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
       try {
         const hostname = getHostname(tab.url);
         const shouldApply = resolveEnabled(updated, hostname);
-        await applyToTab(tab.id, shouldApply, updated);
+        await applyToTab(tab.id, shouldApply, updated, hostname);
       } catch (_) {}
     }
     sendResponse({ success: true });
@@ -111,7 +111,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab) {
       const shouldApply = resolveEnabled(updated, hostname);
-      await applyToTab(tab.id, shouldApply, updated);
+      await applyToTab(tab.id, shouldApply, updated, hostname);
     }
     sendResponse({ success: true, siteSettings });
     return true;
@@ -143,7 +143,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab) {
       const shouldApply = nowBlacklisted ? false : resolveEnabled(updated, hostname);
-      await applyToTab(tab.id, shouldApply, updated);
+      await applyToTab(tab.id, shouldApply, updated, hostname);
     }
     sendResponse({ success: true, blacklist, nowBlacklisted });
     return true;
@@ -160,7 +160,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     for (const tab of tabs) {
       try {
         if (getHostname(tab.url) === hostname) {
-          await applyToTab(tab.id, resolveEnabled(updated, hostname), updated);
+          await applyToTab(tab.id, resolveEnabled(updated, hostname), updated, hostname);
         }
       } catch (_) {}
     }
@@ -188,7 +188,7 @@ chrome.commands.onCommand.addListener(async (command) => {
     await chrome.storage.local.set(updated);
 
     const shouldApply = nowBlacklisted ? false : resolveEnabled(updated, hostname);
-    await applyToTab(activeTab.id, shouldApply, updated);
+    await applyToTab(activeTab.id, shouldApply, updated, hostname);
 
     // Toast on page
     try {
@@ -234,7 +234,7 @@ chrome.commands.onCommand.addListener(async (command) => {
     try {
       const hostname = getHostname(tab.url);
       const resolved = resolveEnabled({ ...settings, globalEnabled: newState }, hostname);
-      await applyToTab(tab.id, resolved, { ...settings, globalEnabled: newState });
+      await applyToTab(tab.id, resolved, { ...settings, globalEnabled: newState }, hostname);
     } catch (_) {}
   }
 
@@ -274,7 +274,12 @@ chrome.commands.onCommand.addListener(async (command) => {
   }
 });
 
-async function applyToTab(tabId, enabled, settings) {
+async function applyToTab(tabId, enabled, settings, hostname) {
+  // Determine if the user has explicitly overridden this site —
+  // if so, skip auto-detection and force their choice.
+  const siteOverride = hostname && settings.siteSettings?.[hostname];
+  const isExplicit = !!(siteOverride?.overridden) || (settings.blacklist || []).includes(hostname);
+
   try {
     await chrome.scripting.executeScript({
       target: { tabId, allFrames: true },
@@ -284,6 +289,7 @@ async function applyToTab(tabId, enabled, settings) {
         contrast: settings.contrast,
         imageProtection: settings.imageProtection,
         smoothTransition: settings.smoothTransition,
+        skipDetection: isExplicit,
       }],
     });
   } catch (_) {}
@@ -298,6 +304,75 @@ function applyDarkMode(enabled, opts) {
     if (el) el.remove();
     document.documentElement.removeAttribute('data-darkwave');
     return;
+  }
+
+  // Inline detection function (must be inside applyDarkMode since
+  // chrome.scripting.executeScript only injects this single function)
+  function isPageNativelyDark() {
+    const html = document.documentElement;
+    const body = document.body;
+    // Meta color-scheme
+    const meta = document.querySelector('meta[name="color-scheme"]');
+    if (meta) {
+      const v = meta.content.toLowerCase();
+      if (v === 'dark' || v.startsWith('dark')) return true;
+    }
+    // HTML / body attributes (YouTube [dark], GitHub data-color-mode, etc.)
+    if (html.hasAttribute('dark')) return true;
+    const attrs = [
+      html.getAttribute('data-theme'), html.getAttribute('data-color-mode'),
+      html.getAttribute('data-dark'), html.getAttribute('class'),
+      body?.getAttribute('data-theme'), body?.getAttribute('data-color-mode'),
+      body?.getAttribute('class'),
+    ];
+    const pat = /\b(dark|night|dim|black)\b/i;
+    for (const a of attrs) { if (a && pat.test(a)) return true; }
+    // CSS color-scheme on root
+    try {
+      const cs = window.getComputedStyle(html).colorScheme;
+      if (cs && /dark/i.test(cs)) return true;
+    } catch (_) {}
+    // Background luminance
+    const targets = [html, body];
+    const fd = body?.querySelector(':scope > div');
+    if (fd) targets.push(fd);
+    for (const t of targets) {
+      if (!t) continue;
+      try {
+        const bg = window.getComputedStyle(t).backgroundColor;
+        const m = bg.match(/[\d.]+/g);
+        if (!m || m.length < 3) continue;
+        const [r, g, b] = m.map(Number);
+        if (m[3] !== undefined && parseFloat(m[3]) < 0.1) continue;
+        if (r === 0 && g === 0 && b === 0 && m[3] === undefined) continue;
+        const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        if (lum < 0.22) return true;
+      } catch (_) {}
+    }
+    return false;
+  }
+
+  // ── Auto-detect natively dark pages ──────────────────────────────────
+  // If the page is already dark, applying invert() will turn it light.
+  // Skip unless the user explicitly overrode via site toggle or blacklist.
+  if (!opts.skipDetection && !document.documentElement.hasAttribute('data-darkwave')) {
+    if (isPageNativelyDark()) {
+      try {
+        const host = location.hostname;
+        if (host && typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.set({ [`nativeDark:${host}`]: true });
+          // Auto-add to blacklist so it persists
+          chrome.storage.local.get('blacklist', (res) => {
+            const bl = res.blacklist || [];
+            if (!bl.includes(host)) {
+              bl.push(host);
+              chrome.storage.local.set({ blacklist: bl });
+            }
+          });
+        }
+      } catch (_) {}
+      return; // skip applying
+    }
   }
 
   const brightness = opts.brightness / 100;
@@ -381,7 +456,7 @@ setInterval(async () => {
       try {
         const hostname = getHostname(tab.url);
         const resolved = resolveEnabled({ ...settings, globalEnabled: shouldBeOn }, hostname);
-        await applyToTab(tab.id, resolved, settings);
+        await applyToTab(tab.id, resolved, settings, hostname);
       } catch (_) {}
     }
   }
