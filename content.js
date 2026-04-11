@@ -4,6 +4,7 @@
 (async function () {
   const STYLE_ID = '__darkwave_style__';
   const FLASH_ID = '__darkwave_flash__';
+  let skippedNativeDark = false;  // flag: true when we detected native dark and skipped
 
   // Immediately inject a flash-prevention style
   injectFlashPrevention();
@@ -22,42 +23,60 @@
   }
 
   const hostname = location.hostname;
+  const isMainFrame = (window.self === window.top);
   const enabled = resolveEnabled(settings, hostname);
 
   if (enabled) {
-    // Bug 4 fix: detect if page is already natively dark.
-    // We wait for DOMContentLoaded so computed styles are available.
-    // If the page is already dark AND has no explicit user override, skip applying.
-    const applyWhenReady = () => {
-      // Remove flash prevention FIRST so isPageNativelyDark() reads actual
-      // page colours, not the injected #1a1a1a placeholder (which would
-      // always appear "dark" and prevent dark mode from ever being applied).
-      removeFlashPrevention();
+    if (isMainFrame) {
+      // ── Main frame: detect native dark mode at DOMContentLoaded ──
+      const applyWhenReady = () => {
+        // Remove flash prevention FIRST so isPageNativelyDark() reads actual
+        // page colours, not the injected #1a1a1a placeholder.
+        removeFlashPrevention();
 
-      const alreadyDark = isPageNativelyDark();
-      const siteOverride = settings.siteSettings?.[hostname];
-      const hasExplicitOverride = siteOverride?.overridden;
+        const alreadyDark = isPageNativelyDark();
+        const siteOverride = settings.siteSettings?.[hostname];
+        const hasExplicitOverride = siteOverride?.overridden;
 
-      if (alreadyDark && !hasExplicitOverride) {
-        // Page has its own dark mode — store this so popup can show a hint
-        chrome.storage.local.set({ [`nativeDark:${hostname}`]: true });
-        // Auto-add to blacklist so it persists across reloads
-        const bl = settings.blacklist || [];
-        if (!bl.includes(hostname)) {
-          bl.push(hostname);
-          chrome.storage.local.set({ blacklist: bl });
+        if (alreadyDark && !hasExplicitOverride) {
+          // Page has its own dark mode — tell background so it can block
+          // ALL frames in this tab (including cross-origin iframes like
+          // the Google Apps dropdown from ogs.google.com).
+          chrome.storage.local.set({ [`nativeDark:${hostname}`]: true });
+          chrome.runtime.sendMessage({ type: 'NATIVE_DARK_DETECTED', hostname });
+          skippedNativeDark = true;
+          removeDarkMode();
+          return;
         }
-        return;
-      }
-      chrome.storage.local.set({ [`nativeDark:${hostname}`]: false });
-      applyDarkMode(settings);
-    };
+        chrome.storage.local.set({ [`nativeDark:${hostname}`]: false });
+        applyDarkMode(settings);
+      };
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', applyWhenReady, { once: true });
-      // Still apply flash prevention immediately
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyWhenReady, { once: true });
+      } else {
+        applyWhenReady();
+      }
     } else {
-      applyWhenReady();
+      // ── Iframe: ask background if this tab's main page is natively dark ──
+      const applyInIframe = async () => {
+        removeFlashPrevention();
+        try {
+          const response = await chrome.runtime.sendMessage({ type: 'IS_TAB_NATIVE_DARK' });
+          if (response?.nativeDark) {
+            skippedNativeDark = true;
+            removeDarkMode();
+            return;
+          }
+        } catch (_) { }
+        applyDarkMode(settings);
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => applyInIframe(), { once: true });
+      } else {
+        applyInIframe();
+      }
     }
   } else {
     removeFlashPrevention();
@@ -66,18 +85,19 @@
   // Listen for live updates from background
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'APPLY_DARK') {
-      applyDarkMode(msg.settings);
+      if (!skippedNativeDark) applyDarkMode(msg.settings);
     }
     if (msg.type === 'REMOVE_DARK') {
       removeDarkMode();
     }
     if (msg.type === 'UPDATE_DARK') {
-      applyDarkMode(msg.settings);
+      if (!skippedNativeDark) applyDarkMode(msg.settings);
     }
   });
 
   // Observe DOM changes for SPAs (Google Sheets/Docs navigate without full reload)
   const observer = new MutationObserver(() => {
+    if (skippedNativeDark) return;  // don't re-apply on a natively dark page
     const el = document.getElementById(STYLE_ID);
     if (!el && document.documentElement.hasAttribute('data-darkwave')) {
       applyDarkMode(settings);

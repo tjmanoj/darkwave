@@ -13,6 +13,14 @@ const DEFAULT_SETTINGS = {
   smoothTransition: true,
 };
 
+// In-memory tracking of tabs where native dark mode was detected.
+// Using an in-memory Set (keyed by tabId) avoids storage read/write
+// race conditions that plagued the previous per-hostname approach.
+const nativeDarkTabs = new Set();
+
+// Clean up when a tab is closed
+chrome.tabs.onRemoved.addListener((tabId) => nativeDarkTabs.delete(tabId));
+
 // ── Toolbar icon badge ────────────────────────────────────────────────────────
 // Reflects current dark mode state so the icon gives visual feedback.
 function updateBadge(enabled) {
@@ -45,18 +53,30 @@ chrome.runtime.onInstalled.addListener(async () => {
       const hostname = getHostname(tab.url);
       const shouldApply = resolveEnabled(merged, hostname);
       await applyToTab(tab.id, shouldApply, merged, hostname);
-    } catch (_) {}
+    } catch (_) { }
   }
 });
 
 // Re-apply dark mode whenever a tab finishes loading
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  // Clear native-dark status when a new navigation starts
+  if (changeInfo.url) {
+    nativeDarkTabs.delete(tabId);
+  }
+
   if (changeInfo.status !== 'complete') return;
   if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('about:')) return;
 
   const settings = await chrome.storage.local.get(null);
   const hostname = getHostname(tab.url);
   const shouldApply = resolveEnabled(settings, hostname);
+
+  // If this tab was detected as natively dark by the content script,
+  // treat it like a blacklisted site — remove dark mode from all frames.
+  if (nativeDarkTabs.has(tabId) && shouldApply) {
+    await applyToTab(tabId, false, settings, hostname);
+    return;
+  }
 
   await applyToTab(tabId, shouldApply, settings, hostname);
 });
@@ -82,7 +102,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         const hostname = getHostname(tab.url);
         const shouldApply = resolveEnabled(updated, hostname);
         await applyToTab(tab.id, shouldApply, updated, hostname);
-      } catch (_) {}
+      } catch (_) { }
     }
     sendResponse({ success: true });
     return true;
@@ -138,8 +158,9 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
       delete siteSettings[hostname];
     } else {
       blacklist.splice(idx, 1);
-      // Mark site as explicitly enabled so auto-detection cannot re-blacklist it
-      siteSettings[hostname] = { overridden: true, enabled: true };
+      // Remove any existing override so the site falls back to normal
+      // detection flow (no longer needed to prevent auto-re-blacklisting).
+      delete siteSettings[hostname];
     }
     const updated = { ...current, blacklist, siteSettings };
     await chrome.storage.local.set(updated);
@@ -159,8 +180,10 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     const hostname = message.payload.hostname;
     const blacklist = (current.blacklist || []).filter(h => h !== hostname);
     const siteSettings = { ...(current.siteSettings || {}) };
-    // Mark site as explicitly enabled so auto-detection cannot re-blacklist it
-    siteSettings[hostname] = { overridden: true, enabled: true };
+    // Since we no longer auto-blacklist natively dark sites, we don't need
+    // to force an explicit override here.  Just remove any existing override
+    // so the site falls back to normal detection flow.
+    delete siteSettings[hostname];
     const updated = { ...current, blacklist, siteSettings };
     await chrome.storage.local.set(updated);
     // Re-apply to any open tabs for this hostname
@@ -170,9 +193,31 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         if (getHostname(tab.url) === hostname) {
           await applyToTab(tab.id, resolveEnabled(updated, hostname), updated, hostname);
         }
-      } catch (_) {}
+      } catch (_) { }
     }
     sendResponse({ success: true, blacklist });
+    return true;
+  }
+
+  // ── Native dark mode detection (from content script) ─────────────────────────
+  if (message.type === 'NATIVE_DARK_DETECTED') {
+    const tabId = sender.tab?.id;
+    const hostname = message.hostname;
+    if (tabId != null) {
+      nativeDarkTabs.add(tabId);
+      if (hostname) {
+        chrome.storage.local.set({ [`nativeDark:${hostname}`]: true });
+      }
+      // Remove dark mode from ALL frames in this tab (blacklist-like behaviour)
+      const current = await chrome.storage.local.get(null);
+      await applyToTab(tabId, false, current, hostname);
+    }
+    sendResponse({ success: true });
+    return true;
+  }
+
+  if (message.type === 'IS_TAB_NATIVE_DARK') {
+    sendResponse({ nativeDark: nativeDarkTabs.has(sender.tab?.id) });
     return true;
   }
 });
@@ -195,8 +240,8 @@ chrome.commands.onCommand.addListener(async (command) => {
       delete siteSettings[hostname];
     } else {
       blacklist.splice(idx, 1);
-      // Prevent auto-detection from re-blacklisting on the next page load
-      siteSettings[hostname] = { overridden: true, enabled: true };
+      // Remove override so site falls back to normal detection flow
+      delete siteSettings[hostname];
     }
 
     const updated = { ...current, blacklist, siteSettings };
@@ -232,7 +277,7 @@ chrome.commands.onCommand.addListener(async (command) => {
         },
         args: [nowBlacklisted ? `🚫 Blacklisted: ${hostname}` : `✅ Un-blacklisted: ${hostname}`],
       });
-    } catch (_) {}
+    } catch (_) { }
     return;
   }
 
@@ -250,7 +295,7 @@ chrome.commands.onCommand.addListener(async (command) => {
       const hostname = getHostname(tab.url);
       const resolved = resolveEnabled({ ...settings, globalEnabled: newState }, hostname);
       await applyToTab(tab.id, resolved, { ...settings, globalEnabled: newState }, hostname);
-    } catch (_) {}
+    } catch (_) { }
   }
 
   // Show a brief on-screen notification in the active tab
@@ -285,16 +330,11 @@ chrome.commands.onCommand.addListener(async (command) => {
         },
         args: [newState],
       });
-    } catch (_) {}
+    } catch (_) { }
   }
 });
 
 async function applyToTab(tabId, enabled, settings, hostname) {
-  // Determine if the user has explicitly overridden this site —
-  // if so, skip auto-detection and force their choice.
-  const siteOverride = hostname && settings.siteSettings?.[hostname];
-  const isExplicit = !!(siteOverride?.overridden) || (settings.blacklist || []).includes(hostname);
-
   try {
     await chrome.scripting.executeScript({
       target: { tabId, allFrames: true },
@@ -304,13 +344,14 @@ async function applyToTab(tabId, enabled, settings, hostname) {
         contrast: settings.contrast,
         imageProtection: settings.imageProtection,
         smoothTransition: settings.smoothTransition,
-        skipDetection: isExplicit,
       }],
     });
-  } catch (_) {}
+  } catch (_) { }
 }
 
-// This runs inside the page context
+// This runs inside the page context (injected by chrome.scripting.executeScript).
+// Detection is handled entirely by content.js + messaging now — this function
+// only applies or removes the dark-mode styles.
 function applyDarkMode(enabled, opts) {
   const STYLE_ID = '__darkwave_style__';
   let el = document.getElementById(STYLE_ID);
@@ -319,75 +360,6 @@ function applyDarkMode(enabled, opts) {
     if (el) el.remove();
     document.documentElement.removeAttribute('data-darkwave');
     return;
-  }
-
-  // Inline detection function (must be inside applyDarkMode since
-  // chrome.scripting.executeScript only injects this single function)
-  function isPageNativelyDark() {
-    const html = document.documentElement;
-    const body = document.body;
-    // Meta color-scheme
-    const meta = document.querySelector('meta[name="color-scheme"]');
-    if (meta) {
-      const v = meta.content.toLowerCase();
-      if (v === 'dark' || v.startsWith('dark')) return true;
-    }
-    // HTML / body attributes (YouTube [dark], GitHub data-color-mode, etc.)
-    if (html.hasAttribute('dark')) return true;
-    const attrs = [
-      html.getAttribute('data-theme'), html.getAttribute('data-color-mode'),
-      html.getAttribute('data-dark'), html.getAttribute('class'),
-      body?.getAttribute('data-theme'), body?.getAttribute('data-color-mode'),
-      body?.getAttribute('class'),
-    ];
-    const pat = /\b(dark|night|dim|black)\b/i;
-    for (const a of attrs) { if (a && pat.test(a)) return true; }
-    // CSS color-scheme on root
-    try {
-      const cs = window.getComputedStyle(html).colorScheme;
-      if (cs && /dark/i.test(cs)) return true;
-    } catch (_) {}
-    // Background luminance
-    const targets = [html, body];
-    const fd = body?.querySelector(':scope > div');
-    if (fd) targets.push(fd);
-    for (const t of targets) {
-      if (!t) continue;
-      try {
-        const bg = window.getComputedStyle(t).backgroundColor;
-        const m = bg.match(/[\d.]+/g);
-        if (!m || m.length < 3) continue;
-        const [r, g, b] = m.map(Number);
-        if (m[3] !== undefined && parseFloat(m[3]) < 0.1) continue;
-        if (r === 0 && g === 0 && b === 0 && m[3] === undefined) continue;
-        const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        if (lum < 0.22) return true;
-      } catch (_) {}
-    }
-    return false;
-  }
-
-  // ── Auto-detect natively dark pages ──────────────────────────────────
-  // If the page is already dark, applying invert() will turn it light.
-  // Skip unless the user explicitly overrode via site toggle or blacklist.
-  if (!opts.skipDetection && !document.documentElement.hasAttribute('data-darkwave')) {
-    if (isPageNativelyDark()) {
-      try {
-        const host = location.hostname;
-        if (host && typeof chrome !== 'undefined' && chrome.storage) {
-          chrome.storage.local.set({ [`nativeDark:${host}`]: true });
-          // Auto-add to blacklist so it persists
-          chrome.storage.local.get('blacklist', (res) => {
-            const bl = res.blacklist || [];
-            if (!bl.includes(host)) {
-              bl.push(host);
-              chrome.storage.local.set({ blacklist: bl });
-            }
-          });
-        }
-      } catch (_) {}
-      return; // skip applying
-    }
   }
 
   const brightness = opts.brightness / 100;
@@ -399,10 +371,6 @@ function applyDarkMode(enabled, opts) {
       filter: invert(1) hue-rotate(180deg) brightness(${brightness}) contrast(${contrast}) !important;
       transition: ${transition} !important;
     }
-    /* Re-invert real media so photos/videos look natural.
-       canvas is intentionally excluded — it inherits the html-level inversion
-       which is exactly what Google Sheets / Docs cells need to appear dark.
-       Re-inverting canvas would double-invert the cells back to white. */
     html[data-darkwave] img,
     html[data-darkwave] video,
     html[data-darkwave] picture,
@@ -472,7 +440,7 @@ setInterval(async () => {
         const hostname = getHostname(tab.url);
         const resolved = resolveEnabled({ ...settings, globalEnabled: shouldBeOn }, hostname);
         await applyToTab(tab.id, resolved, settings, hostname);
-      } catch (_) {}
+      } catch (_) { }
     }
   }
 }, 60000);
