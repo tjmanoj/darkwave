@@ -129,14 +129,19 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     const current = await chrome.storage.local.get(null);
     const hostname = message.payload.hostname;
     const blacklist = current.blacklist ? [...current.blacklist] : [];
+    const siteSettings = { ...(current.siteSettings || {}) };
     const idx = blacklist.indexOf(hostname);
     const nowBlacklisted = idx === -1;
     if (nowBlacklisted) {
       blacklist.push(hostname);
+      // Clear any "force-enable" override when blacklisting
+      delete siteSettings[hostname];
     } else {
       blacklist.splice(idx, 1);
+      // Mark site as explicitly enabled so auto-detection cannot re-blacklist it
+      siteSettings[hostname] = { overridden: true, enabled: true };
     }
-    const updated = { ...current, blacklist };
+    const updated = { ...current, blacklist, siteSettings };
     await chrome.storage.local.set(updated);
 
     // Remove dark mode immediately if we just blacklisted, re-apply if un-blacklisted
@@ -153,7 +158,10 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     const current = await chrome.storage.local.get(null);
     const hostname = message.payload.hostname;
     const blacklist = (current.blacklist || []).filter(h => h !== hostname);
-    const updated = { ...current, blacklist };
+    const siteSettings = { ...(current.siteSettings || {}) };
+    // Mark site as explicitly enabled so auto-detection cannot re-blacklist it
+    siteSettings[hostname] = { overridden: true, enabled: true };
+    const updated = { ...current, blacklist, siteSettings };
     await chrome.storage.local.set(updated);
     // Re-apply to any open tabs for this hostname
     const tabs = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] });
@@ -179,12 +187,19 @@ chrome.commands.onCommand.addListener(async (command) => {
 
     const current = await chrome.storage.local.get(null);
     const blacklist = current.blacklist ? [...current.blacklist] : [];
+    const siteSettings = { ...(current.siteSettings || {}) };
     const idx = blacklist.indexOf(hostname);
     const nowBlacklisted = idx === -1;
-    if (nowBlacklisted) blacklist.push(hostname);
-    else blacklist.splice(idx, 1);
+    if (nowBlacklisted) {
+      blacklist.push(hostname);
+      delete siteSettings[hostname];
+    } else {
+      blacklist.splice(idx, 1);
+      // Prevent auto-detection from re-blacklisting on the next page load
+      siteSettings[hostname] = { overridden: true, enabled: true };
+    }
 
-    const updated = { ...current, blacklist };
+    const updated = { ...current, blacklist, siteSettings };
     await chrome.storage.local.set(updated);
 
     const shouldApply = nowBlacklisted ? false : resolveEnabled(updated, hostname);
