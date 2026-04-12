@@ -82,120 +82,123 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 });
 
 // Listen for messages from popup or content scripts
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+// IMPORTANT: This listener must NOT be async. In MV3, an async listener returns
+// a Promise (not `true`), so Chrome closes the message channel before sendResponse
+// fires, causing "Cannot read properties of undefined" in the caller.
+// Instead, wrap async work inside a plain function that returns true synchronously.
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'GET_SETTINGS') {
-    const settings = await chrome.storage.local.get(null);
-    sendResponse({ settings });
+    chrome.storage.local.get(null).then(settings => sendResponse({ settings }));
     return true;
   }
 
   if (message.type === 'UPDATE_SETTINGS') {
-    const current = await chrome.storage.local.get(null);
-    const updated = { ...current, ...message.payload };
-    await chrome.storage.local.set(updated);
-    updateBadge(updated.globalEnabled);
+    (async () => {
+      const current = await chrome.storage.local.get(null);
+      const updated = { ...current, ...message.payload };
+      await chrome.storage.local.set(updated);
+      updateBadge(updated.globalEnabled);
 
-    // Broadcast to all active tabs
-    const tabs = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] });
-    for (const tab of tabs) {
-      try {
-        const hostname = getHostname(tab.url);
-        const shouldApply = resolveEnabled(updated, hostname);
-        await applyToTab(tab.id, shouldApply, updated, hostname);
-      } catch (_) { }
-    }
-    sendResponse({ success: true });
+      const tabs = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] });
+      for (const tab of tabs) {
+        try {
+          const hostname = getHostname(tab.url);
+          const shouldApply = resolveEnabled(updated, hostname);
+          await applyToTab(tab.id, shouldApply, updated, hostname);
+        } catch (_) { }
+      }
+      sendResponse({ success: true });
+    })();
     return true;
   }
 
   if (message.type === 'TOGGLE_SITE') {
-    const current = await chrome.storage.local.get(null);
-    const hostname = message.payload.hostname;
-    const siteSettings = current.siteSettings || {};
+    (async () => {
+      const current = await chrome.storage.local.get(null);
+      const hostname = message.payload.hostname;
+      const siteSettings = current.siteSettings || {};
 
-    if (siteSettings[hostname]?.overridden) {
-      // Remove override
-      delete siteSettings[hostname];
-    } else {
-      // Set override opposite to global
-      siteSettings[hostname] = {
-        overridden: true,
-        enabled: !current.globalEnabled,
-      };
-    }
+      if (siteSettings[hostname]?.overridden) {
+        delete siteSettings[hostname];
+      } else {
+        siteSettings[hostname] = {
+          overridden: true,
+          enabled: !current.globalEnabled,
+        };
+      }
 
-    const updated = { ...current, siteSettings };
-    await chrome.storage.local.set(updated);
+      const updated = { ...current, siteSettings };
+      await chrome.storage.local.set(updated);
 
-    // Apply to current tab
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab) {
-      const shouldApply = resolveEnabled(updated, hostname);
-      await applyToTab(tab.id, shouldApply, updated, hostname);
-    }
-    sendResponse({ success: true, siteSettings });
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab) {
+        const shouldApply = resolveEnabled(updated, hostname);
+        await applyToTab(tab.id, shouldApply, updated, hostname);
+      }
+      sendResponse({ success: true, siteSettings });
+    })();
     return true;
   }
 
   if (message.type === 'GET_TAB_INFO') {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab) {
-      sendResponse({ url: tab.url, hostname: getHostname(tab.url) });
-    }
+    chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
+      if (tab) {
+        sendResponse({ url: tab.url, hostname: getHostname(tab.url) });
+      } else {
+        sendResponse({});
+      }
+    });
     return true;
   }
 
   if (message.type === 'TOGGLE_BLACKLIST') {
-    const current = await chrome.storage.local.get(null);
-    const hostname = message.payload.hostname;
-    const blacklist = current.blacklist ? [...current.blacklist] : [];
-    const siteSettings = { ...(current.siteSettings || {}) };
-    const idx = blacklist.indexOf(hostname);
-    const nowBlacklisted = idx === -1;
-    if (nowBlacklisted) {
-      blacklist.push(hostname);
-      // Clear any "force-enable" override when blacklisting
-      delete siteSettings[hostname];
-    } else {
-      blacklist.splice(idx, 1);
-      // Remove any existing override so the site falls back to normal
-      // detection flow (no longer needed to prevent auto-re-blacklisting).
-      delete siteSettings[hostname];
-    }
-    const updated = { ...current, blacklist, siteSettings };
-    await chrome.storage.local.set(updated);
+    (async () => {
+      const current = await chrome.storage.local.get(null);
+      const hostname = message.payload.hostname;
+      const blacklist = current.blacklist ? [...current.blacklist] : [];
+      const siteSettings = { ...(current.siteSettings || {}) };
+      const idx = blacklist.indexOf(hostname);
+      const nowBlacklisted = idx === -1;
+      if (nowBlacklisted) {
+        blacklist.push(hostname);
+        delete siteSettings[hostname];
+      } else {
+        blacklist.splice(idx, 1);
+        delete siteSettings[hostname];
+      }
+      const updated = { ...current, blacklist, siteSettings };
+      await chrome.storage.local.set(updated);
 
-    // Remove dark mode immediately if we just blacklisted, re-apply if un-blacklisted
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab) {
-      const shouldApply = nowBlacklisted ? false : resolveEnabled(updated, hostname);
-      await applyToTab(tab.id, shouldApply, updated, hostname);
-    }
-    sendResponse({ success: true, blacklist, nowBlacklisted });
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab) {
+        const shouldApply = nowBlacklisted ? false : resolveEnabled(updated, hostname);
+        await applyToTab(tab.id, shouldApply, updated, hostname);
+      }
+      sendResponse({ success: true, blacklist, nowBlacklisted });
+    })();
     return true;
   }
 
   if (message.type === 'REMOVE_BLACKLIST_ENTRY') {
-    const current = await chrome.storage.local.get(null);
-    const hostname = message.payload.hostname;
-    const blacklist = (current.blacklist || []).filter(h => h !== hostname);
-    const siteSettings = { ...(current.siteSettings || {}) };
-    // Since we no longer auto-blacklist natively dark sites, we don't need
-    // to force an explicit override here.  Just remove any existing override
-    // so the site falls back to normal detection flow.
-    delete siteSettings[hostname];
-    const updated = { ...current, blacklist, siteSettings };
-    await chrome.storage.local.set(updated);
-    // Re-apply to any open tabs for this hostname
-    const tabs = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] });
-    for (const tab of tabs) {
-      try {
-        if (getHostname(tab.url) === hostname) {
-          await applyToTab(tab.id, resolveEnabled(updated, hostname), updated, hostname);
-        }
-      } catch (_) { }
-    }
-    sendResponse({ success: true, blacklist });
+    (async () => {
+      const current = await chrome.storage.local.get(null);
+      const hostname = message.payload.hostname;
+      const blacklist = (current.blacklist || []).filter(h => h !== hostname);
+      const siteSettings = { ...(current.siteSettings || {}) };
+      delete siteSettings[hostname];
+      const updated = { ...current, blacklist, siteSettings };
+      await chrome.storage.local.set(updated);
+
+      const tabs = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] });
+      for (const tab of tabs) {
+        try {
+          if (getHostname(tab.url) === hostname) {
+            await applyToTab(tab.id, resolveEnabled(updated, hostname), updated, hostname);
+          }
+        } catch (_) { }
+      }
+      sendResponse({ success: true, blacklist });
+    })();
     return true;
   }
 
@@ -208,9 +211,9 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
       if (hostname) {
         chrome.storage.local.set({ [`nativeDark:${hostname}`]: true });
       }
-      // Remove dark mode from ALL frames in this tab (blacklist-like behaviour)
-      const current = await chrome.storage.local.get(null);
-      await applyToTab(tabId, false, current, hostname);
+      chrome.storage.local.get(null).then(current => {
+        applyToTab(tabId, false, current, hostname);
+      });
     }
     sendResponse({ success: true });
     return true;
