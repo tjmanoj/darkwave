@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DarkWave — Smart Dark Mode Everywhere</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #030303;
+            --bg-secondary: #0a0a0f;
+            --bg-card: rgba(255,255,255,0.02);
+            --bg-card-hover: rgba(255,255,255,0.05);
+            --text-primary: #f0f0f5;
+            --text-secondary: #8888aa;
+            --text-muted: #555570;
+            --border: rgba(255,255,255,0.06);
+            --border-hover: rgba(168,85,247,0.4);
+            --purple: #a855f7;
+            --purple-glow: rgba(168,85,247,0.5);
+            --blue: #3b82f6;
+            --cyan: #22d3ee;
+            --pink: #ec4899;
+            --neon-glow: 0 0 15px var(--purple-glow), 0 0 60px rgba(168,85,247,0.15);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8f8fc;
+            --bg-secondary: #efeffa;
+            --bg-card: rgba(0,0,0,0.02);
+            --bg-card-hover: rgba(0,0,0,0.05);
+            --text-primary: #111118;
+            --text-secondary: #555570;
+            --text-muted: #8888aa;
+            --border: rgba(0,0,0,0.08);
+            --border-hover: rgba(168,85,247,0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            transition: background 0.6s ease, color 0.5s ease;
+        }
+
+        /* ─── Animated grid background ───────────────────────────── */
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(168,85,247,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(168,85,247,0.03) 1px, transparent 1px);
+            background-size: 80px 80px;
+            mask-image: radial-gradient(ellipse 70% 50% at 50% 0%, black 30%, transparent 100%);
+            -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 0%, black 30%, transparent 100%);
+            animation: gridShift 20s linear infinite;
+        }
+        [data-theme="light"] .grid-bg { opacity: 0.5; }
+        @keyframes gridShift { to { background-position: 80px 80px; } }
+
+        /* ─── Animated aurora blobs ──────────────────────────────── */
+        .aurora {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.25;
+            z-index: 0;
+            pointer-events: none;
+            animation: auroraFloat 12s ease-in-out infinite alternate;
+        }
+        .aurora-1 { width: 600px; height: 600px; background: var(--purple); top: -200px; right: -150px; }
+        .aurora-2 { width: 500px; height: 500px; background: var(--blue); bottom: -100px; left: -150px; animation-delay: -4s; animation-duration: 16s; }
+        .aurora-3 { width: 400px; height: 400px; background: var(--cyan); top: 40%; left: 50%; animation-delay: -8s; animation-duration: 14s; opacity: 0.12; }
+        [data-theme="light"] .aurora { opacity: 0.10; }
+        @keyframes auroraFloat {
+            0%   { transform: translate(0, 0) scale(1); }
+            50%  { transform: translate(30px, -40px) scale(1.15); }
+            100% { transform: translate(-20px, 30px) scale(0.95); }
+        }
+
+        /* ─── Particle canvas ────────────────────────────────────── */
+        #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+        /* ─── Glass morphism ─────────────────────────────────────── */
+        .glass {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px) saturate(1.2);
+            -webkit-backdrop-filter: blur(20px) saturate(1.2);
+            border: 1px solid var(--border);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .glass:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+            box-shadow: var(--neon-glow);
+            transform: translateY(-4px);
+        }
+
+        /* ─── Neon text ──────────────────────────────────────────── */
+        .neon-text {
+            text-shadow:
+                0 0 7px rgba(168,85,247,0.6),
+                0 0 20px rgba(168,85,247,0.3),
+                0 0 60px rgba(168,85,247,0.15);
+        }
+        [data-theme="light"] .neon-text {
+            text-shadow: none;
+            color: var(--purple);
+        }
+
+        /* ─── Gradient text ──────────────────────────────────────── */
+        .gradient-text {
+            background: linear-gradient(135deg, #a855f7 0%, #3b82f6 50%, #22d3ee 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% 200%;
+            animation: gradientShift 4s ease infinite;
+        }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* ─── Neon underline ─────────────────────────────────────── */
+        .neon-link {
+            position: relative;
+            color: var(--text-secondary);
+            transition: color 0.3s;
+        }
+        .neon-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--purple), var(--cyan));
+            border-radius: 2px;
+            transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 0 8px var(--purple-glow);
+        }
+        .neon-link:hover { color: var(--purple); }
+        .neon-link:hover::after { width: 100%; }
+
+        /* ─── Install button ─────────────────────────────────────── */
+        .install-btn {
+            position: relative;
+            background: linear-gradient(135deg, #9333ea, #7c3aed, #6366f1);
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease infinite;
+            box-shadow: 0 0 20px rgba(147,51,234,0.4), 0 0 60px rgba(147,51,234,0.15);
+            transition: all 0.3s;
+        }
+        .install-btn:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 0 30px rgba(147,51,234,0.6), 0 0 80px rgba(147,51,234,0.25);
+        }
+        .install-btn::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, var(--purple), var(--cyan), var(--pink), var(--purple));
+            background-size: 400% 400%;
+            animation: borderGlow 6s linear infinite;
+            z-index: -1;
+            filter: blur(8px);
+            opacity: 0.5;
+        }
+        @keyframes borderGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ─── Theme toggle ───────────────────────────────────────── */
+        .theme-toggle {
+            width: 52px;
+            height: 28px;
+            border-radius: 28px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.4s;
+            flex-shrink: 0;
+        }
+        .theme-toggle .knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+        [data-theme="light"] .theme-toggle { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.12); }
+        [data-theme="light"] .theme-toggle .knob {
+            transform: translateX(24px);
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+        }
+
+        /* ─── Stat counter animation ─────────────────────────────── */
+        .stat-value {
+            font-variant-numeric: tabular-nums;
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ─── Feature cards special ──────────────────────────────── */
+        .feature-card {
+            position: relative;
+            overflow: hidden;
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(168,85,247,0.08) 0%, transparent 60%);
+            pointer-events: none;
+            transition: opacity 0.3s;
+            opacity: 0;
+        }
+        .feature-card:hover::before { opacity: 1; }
+
+        /* ─── Glow icon containers ───────────────────────────────── */
+        .glow-icon {
+            position: relative;
+        }
+        .glow-icon::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: inherit;
+            background: inherit;
+            filter: blur(12px);
+            opacity: 0.4;
+            z-index: -1;
+        }
+
+        /* ─── Floating badge ─────────────────────────────────────── */
+        .float-badge {
+            animation: floatBadge 3s ease-in-out infinite;
+        }
+        @keyframes floatBadge {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        /* ─── Keyboard keys ──────────────────────────────────────── */
+        kbd {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8em;
+            color: var(--purple);
+            box-shadow: 0 2px 0 rgba(255,255,255,0.05), 0 0 10px rgba(168,85,247,0.1);
+            transition: all 0.3s;
+        }
+        kbd:hover {
+            box-shadow: 0 2px 0 rgba(255,255,255,0.1), 0 0 20px rgba(168,85,247,0.3);
+            transform: translateY(-1px);
+            border-color: var(--purple);
+        }
+        [data-theme="light"] kbd {
+            background: rgba(0,0,0,0.04);
+            border-color: rgba(0,0,0,0.1);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.05);
+        }
+
+        /* ─── Swiper overrides ───────────────────────────────────── */
+        .swiper-pagination-bullet { background: var(--purple) !important; width: 10px; height: 10px; }
+        .swiper-pagination-bullet-active { box-shadow: 0 0 12px var(--purple-glow); }
+        .swiper-button-next, .swiper-button-prev { color: var(--purple) !important; }
+
+        /* ─── Scroll progress bar ────────────────────────────────── */
+        .scroll-progress {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--purple), var(--cyan), var(--pink));
+            z-index: 9999;
+            transition: width 0.1s;
+            box-shadow: 0 0 10px var(--purple-glow);
+        }
+
+        /* ─── Pulse ring animation ───────────────────────────────── */
+        @keyframes pulseRing {
+            0% { box-shadow: 0 0 0 0 rgba(168,85,247,0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(168,85,247,0); }
+            100% { box-shadow: 0 0 0 0 rgba(168,85,247,0); }
+        }
+        .pulse-ring { animation: pulseRing 2s ease-out infinite; }
+
+        /* ─── Reveal animations ──────────────────────────────────── */
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* ─── Hero glow orbs ─────────────────────────────────────── */
+        .hero-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            animation: orbPulse 5s ease-in-out infinite alternate;
+        }
+        @keyframes orbPulse {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 0.6; transform: scale(1.2); }
+        }
+
+        /* ─── Marquee ────────────────────────────────────────────── */
+        .marquee-track {
+            display: flex;
+            animation: marquee 30s linear infinite;
+            will-change: transform;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* ─── Smooth section transitions ─────────────────────────── */
+        section { position: relative; z-index: 1; }
+
+        /* ── Mobile tweaks ───────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .aurora { opacity: 0.12; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background layers -->
+    <div class="grid-bg"></div>
+    <div class="aurora aurora-1"></div>
+    <div class="aurora aurora-2"></div>
+    <div class="aurora aurora-3"></div>
+    <canvas id="particles"></canvas>
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <!-- ═══ NAVIGATION ═══════════════════════════════════════════ -->
+    <nav class="fixed w-full z-50 glass py-3 px-6 flex justify-between items-center" style="backdrop-filter: blur(30px) saturate(1.5);">
+        <div class="flex items-center gap-3">
+            <img src="images/logo.png" alt="DarkWave Logo" class="w-8 h-8 pulse-ring rounded-full">
+            <span class="text-lg font-extrabold tracking-tight neon-text uppercase">DarkWave</span>
+        </div>
+        <div class="hidden md:flex gap-8 text-sm font-medium">
+            <a href="#features" class="neon-link">Features</a>
+            <a href="#showcase" class="neon-link">Showcase</a>
+            <a href="#shortcuts" class="neon-link">Shortcuts</a>
+            <a href="#compatibility" class="neon-link">Browsers</a>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">
+                <div class="knob">
+                    <span id="themeIcon">🌙</span>
+                </div>
+            </div>
+            <a href="#" class="install-btn text-white px-6 py-2.5 rounded-full font-bold text-sm relative z-10">
+                Install Free
+            </a>
+        </div>
+    </nav>
+
+    <!-- ═══ HERO ═════════════════════════════════════════════════ -->
+    <section class="relative pt-36 pb-28 px-6 max-w-7xl mx-auto flex flex-col items-center text-center">
+        <!-- Decorative orbs -->
+        <div class="hero-orb w-[300px] h-[300px] bg-purple-600 -top-20 -left-32"></div>
+        <div class="hero-orb w-[200px] h-[200px] bg-cyan-500 top-40 -right-20" style="animation-delay:-2s;"></div>
+
+        <div data-aos="zoom-in" class="float-badge mb-8 inline-flex items-center gap-2 px-5 py-2 rounded-full border border-purple-500/20 bg-purple-500/5 text-purple-400 text-sm font-medium">
+            <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+            </span>
+            Manifest V3 &nbsp;·&nbsp; Zero data collection
+        </div>
+
+        <h1 data-aos="fade-up" class="text-5xl md:text-[5.5rem] font-black mb-8 leading-[1.05] tracking-tight">
+            Dark mode that<br>
+            <span class="gradient-text">actually works.</span>
+        </h1>
+
+        <p data-aos="fade-up" data-aos-delay="100" class="text-lg md:text-xl max-w-2xl mb-12 leading-relaxed" style="color: var(--text-secondary);">
+            One extension. Every website. Google Sheets, Docs, and the entire web — all properly dark, with <strong style="color: var(--text-primary);">zero white flash</strong>.
+        </p>
+
+        <div data-aos="fade-up" data-aos-delay="200" class="flex flex-wrap gap-4 justify-center mb-14">
+            <a href="#" class="install-btn text-white px-10 py-4 rounded-full font-bold text-base relative z-10 flex items-center gap-2">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.454 5.454 0 0 1 12 6.545h10.691A12 12 0 0 0 12 0zM1.931 5.47A11.943 11.943 0 0 0 0 12c0 6.012 4.42 10.991 10.189 11.864l3.953-6.847a5.45 5.45 0 0 1-6.865-2.29zm13.342 2.166-3.953 6.848a5.454 5.454 0 0 1 6.865 2.29l3.953-6.849A11.94 11.94 0 0 0 19.636 5.47z"/></svg>
+                Install for Chrome
+            </a>
+            <a href="#features" class="px-10 py-4 rounded-full font-bold text-base border border-white/10 hover:border-purple-500/40 transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.2)]" style="color: var(--text-secondary);">
+                Learn More ↓
+            </a>
+        </div>
+
+        <!-- Hero image with glow frame -->
+        <div data-aos="fade-up" data-aos-delay="300" class="w-full max-w-5xl relative group">
+            <div class="absolute -inset-1 bg-gradient-to-r from-purple-600/20 via-cyan-500/20 to-pink-500/20 rounded-3xl blur-xl opacity-50 group-hover:opacity-80 transition duration-700"></div>
+            <div class="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                <img src="images/hero-banner.png" alt="DarkWave Dashboard" class="w-full">
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ STATS BAR ════════════════════════════════════════════ -->
+    <section class="relative py-12 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-purple-900/10 via-transparent to-cyan-900/10"></div>
+        <div class="relative glass border-y border-white/5">
+            <div class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div data-aos="zoom-in">
+                    <h3 class="text-4xl md:text-5xl font-black stat-value" data-count="0">0</h3>
+                    <p class="text-xs uppercase tracking-[0.25em] mt-2" style="color: var(--text-muted);">White Flashes</p>
+                </div>
+                <div data-aos="zoom-in" data-aos-delay="100">
+                    <h3 class="text-4xl md:text-5xl font-black stat-value" data-count="2">2</h3>
+                    <p class="text-xs uppercase tracking-[0.25em] mt-2" style="color: var(--text-muted);">Keyboard Shortcuts</p>
+                </div>
+                <div data-aos="zoom-in" data-aos-delay="200">
+                    <h3 class="text-4xl md:text-5xl font-black stat-value" data-count="4">4</h3>
+                    <p class="text-xs uppercase tracking-[0.25em] mt-2" style="color: var(--text-muted);">Dark Presets</p>
+                </div>
+                <div data-aos="zoom-in" data-aos-delay="300">
+                    <h3 class="text-4xl md:text-5xl font-black stat-value">∞</h3>
+                    <p class="text-xs uppercase tracking-[0.25em] mt-2" style="color: var(--text-muted);">Sites Supported</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ FEATURES GRID ════════════════════════════════════════ -->
+    <section id="features" class="py-28 px-6 max-w-7xl mx-auto">
+        <div class="text-center mb-20">
+            <p data-aos="fade-up" class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--purple);">What makes us different</p>
+            <h2 data-aos="fade-up" data-aos-delay="50" class="text-4xl md:text-5xl font-black">Core Features</h2>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Card 1 -->
+            <div data-aos="fade-up" class="glass feature-card p-10 rounded-3xl group">
+                <div class="glow-icon bg-purple-600/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-7 text-2xl group-hover:scale-110 transition-transform duration-300">📊</div>
+                <h3 class="text-xl font-bold mb-3">Google Sheets & Docs</h3>
+                <p class="leading-relaxed text-sm" style="color: var(--text-secondary);">Properly darkens canvas-rendered spreadsheet cells — not just the toolbar. Works out of the box.</p>
+            </div>
+            <!-- Card 2 -->
+            <div data-aos="fade-up" data-aos-delay="100" class="glass feature-card p-10 rounded-3xl group relative">
+                <div class="absolute top-4 right-4 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">First</div>
+                <div class="glow-icon bg-blue-600/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-7 text-2xl group-hover:scale-110 transition-transform duration-300">⚡</div>
+                <h3 class="text-xl font-bold mb-3">Zero White Flash</h3>
+                <p class="leading-relaxed text-sm" style="color: var(--text-secondary);">Injects dark mode before the page renders a single pixel. No flicker, ever. A DarkWave exclusive.</p>
+            </div>
+            <!-- Card 3 -->
+            <div data-aos="fade-up" data-aos-delay="200" class="glass feature-card p-10 rounded-3xl group">
+                <div class="glow-icon bg-pink-600/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-7 text-2xl group-hover:scale-110 transition-transform duration-300">⚙️</div>
+                <h3 class="text-xl font-bold mb-3">Fully Configurable</h3>
+                <p class="leading-relaxed text-sm" style="color: var(--text-secondary);">Adjust brightness, contrast, and smooth transitions. Includes auto-schedule and four quick presets.</p>
+            </div>
+            <!-- Card 4 -->
+            <div data-aos="fade-up" data-aos-delay="50" class="glass feature-card p-10 rounded-3xl group">
+                <div class="glow-icon bg-cyan-600/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-7 text-2xl group-hover:scale-110 transition-transform duration-300">🧠</div>
+                <h3 class="text-xl font-bold mb-3">Smart Detection</h3>
+                <p class="leading-relaxed text-sm" style="color: var(--text-secondary);">Auto-detects when a site already has dark mode and silently skips it. No double-inverting.</p>
+            </div>
+            <!-- Card 5 -->
+            <div data-aos="fade-up" data-aos-delay="150" class="glass feature-card p-10 rounded-3xl group">
+                <div class="glow-icon bg-red-600/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-7 text-2xl group-hover:scale-110 transition-transform duration-300">🚫</div>
+                <h3 class="text-xl font-bold mb-3">One-Click Blacklist</h3>
+                <p class="leading-relaxed text-sm" style="color: var(--text-secondary);">Blacklist any site with a keyboard shortcut. DarkWave will never touch it again.</p>
+            </div>
+            <!-- Card 6 -->
+            <div data-aos="fade-up" data-aos-delay="250" class="glass feature-card p-10 rounded-3xl group">
+                <div class="glow-icon bg-amber-600/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-7 text-2xl group-hover:scale-110 transition-transform duration-300">🖼️</div>
+                <h3 class="text-xl font-bold mb-3">Image Protection</h3>
+                <p class="leading-relaxed text-sm" style="color: var(--text-secondary);">Re-inverts images and videos so photos look natural — not neon-tinted or color-swapped.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ SHOWCASE CAROUSEL ════════════════════════════════════ -->
+    <section id="showcase" class="py-24 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent"></div>
+        <div class="max-w-5xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-16">
+                <p data-aos="fade-up" class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--purple);">In Action</p>
+                <h2 data-aos="fade-up" data-aos-delay="50" class="text-4xl md:text-5xl font-black mb-4">See the Difference</h2>
+                <p data-aos="fade-up" data-aos-delay="100" style="color: var(--text-secondary);">Perfectly adapted for your favorite tools.</p>
+            </div>
+            <div data-aos="fade-up" data-aos-delay="200" class="relative group">
+                <div class="absolute -inset-2 bg-gradient-to-r from-purple-600/10 via-cyan-500/10 to-pink-500/10 rounded-3xl blur-2xl opacity-40 group-hover:opacity-70 transition duration-700"></div>
+                <div class="swiper mySwiper rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide"><img src="images/slide1.png" alt="Google Sheets Dark Mode" class="w-full"></div>
+                        <div class="swiper-slide"><img src="images/slide2.png" alt="Google Docs Dark Mode" class="w-full"></div>
+                        <div class="swiper-slide"><img src="images/slide3.png" alt="GitHub Dark Mode" class="w-full"></div>
+                        <div class="swiper-slide"><img src="images/slide4.png" alt="Notion Dark Mode" class="w-full"></div>
+                        <div class="swiper-slide"><img src="images/slide5.png" alt="Wikipedia Dark Mode" class="w-full"></div>
+                    </div>
+                    <div class="swiper-pagination" style="bottom: 16px !important;"></div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ SMART DETECTION + BLACKLIST ══════════════════════════ -->
+    <section class="py-28 px-6 max-w-7xl mx-auto grid md:grid-cols-2 gap-10">
+        <div data-aos="fade-right" class="glass p-10 rounded-3xl relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 via-purple-600 to-transparent"></div>
+            <span class="text-xs font-bold uppercase tracking-[0.25em]" style="color: var(--purple);">Auto-Detection</span>
+            <h3 class="text-2xl font-bold mt-5 mb-5">Native Dark Mode Awareness</h3>
+            <p class="text-sm mb-8 leading-relaxed" style="color: var(--text-secondary);">DarkWave detects if a site like GitHub or YouTube already uses dark mode and skips it to prevent double-inverting.</p>
+            <ul class="space-y-4 text-sm">
+                <li class="flex items-center gap-3" style="color: var(--text-secondary);">
+                    <span class="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 flex-shrink-0">✓</span>
+                    Checks background luminance
+                </li>
+                <li class="flex items-center gap-3" style="color: var(--text-secondary);">
+                    <span class="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 flex-shrink-0">✓</span>
+                    Reads <code class="text-purple-400 text-xs">color-scheme</code> meta tags
+                </li>
+                <li class="flex items-center gap-3" style="color: var(--text-secondary);">
+                    <span class="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 flex-shrink-0">✓</span>
+                    Detects <code class="text-purple-400 text-xs">data-theme="dark"</code> attributes
+                </li>
+                <li class="flex items-center gap-3" style="color: var(--text-secondary);">
+                    <span class="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 flex-shrink-0">✓</span>
+                    Auto-skips silently — no user action needed
+                </li>
+            </ul>
+        </div>
+        <div data-aos="fade-left" class="glass p-10 rounded-3xl relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-red-500 via-red-600 to-transparent"></div>
+            <span class="text-xs font-bold uppercase tracking-[0.25em] text-red-400">Blacklist</span>
+            <h3 class="text-2xl font-bold mt-5 mb-5">One-Keystroke Blacklist</h3>
+            <p class="text-sm mb-8 leading-relaxed" style="color: var(--text-secondary);">If any site looks off, blacklist it permanently in one keystroke. DarkWave will never touch it again.</p>
+            <div class="bg-black/20 p-6 rounded-2xl border border-white/5">
+                <p class="text-[10px] uppercase tracking-[0.2em] mb-3 font-mono" style="color: var(--text-muted);">Keyboard Shortcut</p>
+                <div class="flex items-center gap-2">
+                    <kbd>Alt</kbd> <span style="color: var(--text-muted);">+</span> <kbd>Shift</kbd> <span style="color: var(--text-muted);">+</span> <kbd>B</kbd>
+                </div>
+                <p class="text-xs mt-4" style="color: var(--text-muted);">Or use the ✕ button in the popup blacklist panel.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ SHORTCUTS ════════════════════════════════════════════ -->
+    <section id="shortcuts" class="py-28 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-900/5 to-transparent"></div>
+        <div class="relative z-10 max-w-4xl mx-auto px-6">
+            <p data-aos="fade-up" class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--cyan);">Power user</p>
+            <h2 data-aos="fade-up" data-aos-delay="50" class="text-4xl md:text-5xl font-black mb-16">Keyboard Shortcuts</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div data-aos="fade-up" class="glass p-8 rounded-3xl group">
+                    <div class="mb-6 flex justify-center gap-2">
+                        <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>D</kbd>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">Toggle Dark Mode</h4>
+                    <p class="text-sm" style="color: var(--text-muted);">Flip dark mode on/off instantly across all tabs</p>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="100" class="glass p-8 rounded-3xl group">
+                    <div class="mb-6 flex justify-center gap-2">
+                        <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>B</kbd>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">Blacklist Site</h4>
+                    <p class="text-sm" style="color: var(--text-muted);">Permanently exclude the current site from dark mode</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ BROWSER MARQUEE ══════════════════════════════════════ -->
+    <section id="compatibility" class="py-24 border-t border-b" style="border-color: var(--border);">
+        <div class="text-center mb-14">
+            <p data-aos="fade-up" class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--text-muted);">Compatibility</p>
+            <h2 data-aos="fade-up" data-aos-delay="50" class="text-4xl md:text-5xl font-black">Works Everywhere</h2>
+        </div>
+        <div class="overflow-hidden">
+            <div class="marquee-track">
+                <div class="flex gap-6 px-3">
+                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🌐 Chrome 88+</span>
+                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🦁 Brave</span>
+                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🔷 Edge</span>
+                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🏄 Arc</span>
+                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🔴 Opera</span>
+                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🎵 Vivaldi</span>
+                </div>
+                <div class="flex gap-6 px-3" aria-hidden="true">
+                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🌐 Chrome 88+</span>
+                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🦁 Brave</span>
+                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🔷 Edge</span>
+                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🏄 Arc</span>
+                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🔴 Opera</span>
+                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🎵 Vivaldi</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ CTA ══════════════════════════════════════════════════ -->
+    <section class="py-32 px-6 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-purple-900/10 via-transparent to-transparent"></div>
+        <div class="relative z-10 max-w-3xl mx-auto">
+            <h2 data-aos="fade-up" class="text-4xl md:text-6xl font-black mb-8 leading-tight">Ready to go <span class="gradient-text">dark</span>?</h2>
+            <p data-aos="fade-up" data-aos-delay="100" class="text-lg mb-12" style="color: var(--text-secondary);">Install DarkWave in seconds. Free, private, and open-source.</p>
+            <a data-aos="zoom-in" data-aos-delay="200" href="#" class="install-btn inline-flex items-center gap-3 text-white px-12 py-5 rounded-full font-bold text-lg relative z-10">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.454 5.454 0 0 1 12 6.545h10.691A12 12 0 0 0 12 0zM1.931 5.47A11.943 11.943 0 0 0 0 12c0 6.012 4.42 10.991 10.189 11.864l3.953-6.847a5.45 5.45 0 0 1-6.865-2.29zm13.342 2.166-3.953 6.848a5.454 5.454 0 0 1 6.865 2.29l3.953-6.849A11.94 11.94 0 0 0 19.636 5.47z"/></svg>
+                Install DarkWave — It's Free
+            </a>
+        </div>
+    </section>
+
+    <!-- ═══ FOOTER ═══════════════════════════════════════════════ -->
+    <footer class="py-16 px-6 border-t text-center" style="border-color: var(--border);">
+        <img src="images/logo.png" alt="Logo" class="w-12 h-12 mx-auto mb-6 opacity-60">
+        <p class="text-sm mb-2" style="color: var(--text-muted);">© 2026 DarkWave Extension</p>
+        <p class="text-xs" style="color: var(--text-muted);">Built for the privacy-conscious web. Zero data collection.</p>
+        <div class="flex justify-center gap-6 mt-6">
+            <a href="PRIVACY.md" class="neon-link text-xs">Privacy Policy</a>
+            <a href="https://github.com" class="neon-link text-xs">GitHub</a>
+        </div>
+    </footer>
+
+    <!-- ═══ SCRIPTS ══════════════════════════════════════════════ -->
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+    // ── AOS ──────────────────────────────────────────────────────
+    AOS.init({ duration: 800, once: true, easing: 'ease-out-cubic', offset: 60 });
+
+    // ── Swiper ──────────────────────────────────────────────────
+    new Swiper('.mySwiper', {
+        loop: true,
+        grabCursor: true,
+        pagination: { el: '.swiper-pagination', clickable: true },
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        autoplay: { delay: 3500, disableOnInteraction: false },
+        effect: 'slide',
+        speed: 600,
+    });
+
+    // ── Theme toggle ────────────────────────────────────────────
+    const html = document.documentElement;
+    const toggle = document.getElementById('themeToggle');
+    const icon = document.getElementById('themeIcon');
+    const saved = localStorage.getItem('dw-theme');
+    if (saved) { html.dataset.theme = saved; icon.textContent = saved === 'light' ? '☀️' : '🌙'; }
+
+    toggle.addEventListener('click', () => {
+        const next = html.dataset.theme === 'dark' ? 'light' : 'dark';
+        html.dataset.theme = next;
+        icon.textContent = next === 'light' ? '☀️' : '🌙';
+        localStorage.setItem('dw-theme', next);
+    });
+
+    // ── Scroll progress bar ─────────────────────────────────────
+    const bar = document.getElementById('scrollProgress');
+    window.addEventListener('scroll', () => {
+        const h = document.documentElement.scrollHeight - window.innerHeight;
+        bar.style.width = (window.scrollY / h * 100) + '%';
+    }, { passive: true });
+
+    // ── Particle canvas ─────────────────────────────────────────
+    (function() {
+        const c = document.getElementById('particles');
+        const ctx = c.getContext('2d');
+        let w, h, particles = [];
+        const COUNT = 60;
+
+        function resize() { w = c.width = window.innerWidth; h = c.height = window.innerHeight; }
+        resize();
+        window.addEventListener('resize', resize);
+
+        for (let i = 0; i < COUNT; i++) {
+            particles.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 1.5 + 0.3,
+                dx: (Math.random() - 0.5) * 0.3,
+                dy: (Math.random() - 0.5) * 0.3,
+                alpha: Math.random() * 0.4 + 0.1,
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, w, h);
+            const isDark = html.dataset.theme !== 'light';
+            for (const p of particles) {
+                p.x += p.dx; p.y += p.dy;
+                if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+                if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = isDark
+                    ? `rgba(168, 85, 247, ${p.alpha})`
+                    : `rgba(100, 50, 200, ${p.alpha * 0.5})`;
+                ctx.fill();
+            }
+            // Draw faint connection lines
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = isDark
+                            ? `rgba(168, 85, 247, ${0.06 * (1 - dist / 120)})`
+                            : `rgba(100, 50, 200, ${0.04 * (1 - dist / 120)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(draw);
+        }
+        draw();
+    })();
+
+    // ── Mouse-follow radial glow on feature cards ───────────────
+    document.querySelectorAll('.feature-card').forEach(card => {
+        card.addEventListener('mousemove', e => {
+            const rect = card.getBoundingClientRect();
+            card.style.setProperty('--mouse-x', ((e.clientX - rect.left) / rect.width * 100) + '%');
+            card.style.setProperty('--mouse-y', ((e.clientY - rect.top) / rect.height * 100) + '%');
+        });
+    });
+
+    // ── Smooth scroll for anchor links ──────────────────────────
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            const target = document.querySelector(a.getAttribute('href'));
+            if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        });
+    });
+    </script>
+</body>
+</html>
