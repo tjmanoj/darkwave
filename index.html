@@ -347,13 +347,186 @@
         /* ─── Smooth section transitions ─────────────────────────── */
         section { position: relative; z-index: 1; }
 
+        /* ─── Custom neon cursor ─────────────────────────────────── */
+        .cursor-icon {
+            position: fixed;
+            width: 24px;
+            height: 24px;
+            pointer-events: none;
+            z-index: 99999;
+            transform: translate(-2px, -2px);
+            filter: drop-shadow(0 0 6px var(--purple)) drop-shadow(0 0 18px var(--purple-glow));
+            transition: filter 0.3s;
+        }
+        .cursor-icon svg { width: 100%; height: 100%; }
+        .cursor-icon.hover-purple { filter: drop-shadow(0 0 8px #a855f7) drop-shadow(0 0 24px rgba(168,85,247,0.6)); }
+        .cursor-icon.hover-cyan   { filter: drop-shadow(0 0 8px #22d3ee) drop-shadow(0 0 24px rgba(34,211,238,0.6)); }
+        .cursor-icon.hover-pink   { filter: drop-shadow(0 0 8px #ec4899) drop-shadow(0 0 24px rgba(236,72,153,0.6)); }
+        .cursor-icon.hover-blue   { filter: drop-shadow(0 0 8px #3b82f6) drop-shadow(0 0 24px rgba(59,130,246,0.6)); }
+        .cursor-icon.hover-red    { filter: drop-shadow(0 0 8px #ef4444) drop-shadow(0 0 24px rgba(239,68,68,0.6)); }
+        .cursor-icon.hover-amber  { filter: drop-shadow(0 0 8px #f59e0b) drop-shadow(0 0 24px rgba(245,158,11,0.6)); }
+        .cursor-icon.hover-link   { filter: drop-shadow(0 0 10px #22d3ee) drop-shadow(0 0 28px rgba(34,211,238,0.6)); }
+        .cursor-icon .cursor-fill  { transition: fill 0.3s; fill: var(--purple); }
+        .cursor-icon .cursor-stroke { transition: stroke 0.3s; stroke: #fff; stroke-width: 1.5; fill: none; }
+        .cursor-icon.hover-purple .cursor-fill { fill: #a855f7; }
+        .cursor-icon.hover-cyan   .cursor-fill { fill: #22d3ee; }
+        .cursor-icon.hover-pink   .cursor-fill { fill: #ec4899; }
+        .cursor-icon.hover-blue   .cursor-fill { fill: #3b82f6; }
+        .cursor-icon.hover-red    .cursor-fill { fill: #ef4444; }
+        .cursor-icon.hover-amber  .cursor-fill { fill: #f59e0b; }
+        .cursor-icon.hover-link   .cursor-fill { fill: #22d3ee; }
+
+        .sparkle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 99997;
+            border-radius: 50%;
+            animation: sparkleFade 0.6s ease-out forwards;
+        }
+        @keyframes sparkleFade {
+            0% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%,-50%) scale(0) translateY(-20px); }
+        }
+        @keyframes sparkleFloat {
+            0% { opacity: 1; transform: translate(-50%,-50%) scale(1) rotate(0deg); }
+            100% { opacity: 0; transform: translate(-50%,-50%) scale(0) rotate(180deg) translateY(-30px); }
+        }
+
+        /* Hide custom cursor on touch devices */
+        @media (hover: none), (pointer: coarse) {
+            .cursor-icon { display: none !important; }
+        }
+        /* Use default cursor on interactive elements for accessibility */
+        body { cursor: none; }
+        a, button, input, select, textarea, [role="button"], .theme-toggle, .swiper-button-next, .swiper-button-prev {
+            cursor: none !important;
+        }
+        @media (hover: none), (pointer: coarse) {
+            body, a, button, input, select, textarea, [role="button"], .theme-toggle { cursor: auto !important; }
+        }
+
+        /* ─── Mobile hamburger ───────────────────────────────────── */
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: none;
+            padding: 4px;
+            z-index: 60;
+        }
+        .mobile-menu-btn span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: var(--text-primary);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+        .mobile-menu-btn.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .mobile-menu-btn.active span:nth-child(2) { opacity: 0; }
+        .mobile-menu-btn.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(3,3,3,0.95);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            z-index: 55;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+        }
+        .mobile-nav.open { display: flex; }
+        .mobile-nav a {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            transition: color 0.3s;
+        }
+        .mobile-nav a:hover { color: var(--purple); }
+        [data-theme="light"] .mobile-nav { background: rgba(248,248,252,0.95); }
+
         /* ── Mobile tweaks ───────────────────────────────────────── */
         @media (max-width: 768px) {
             .aurora { opacity: 0.12; }
+            .aurora-1 { width: 300px; height: 300px; }
+            .aurora-2 { width: 250px; height: 250px; }
+            .aurora-3 { width: 200px; height: 200px; }
+
+            .mobile-menu-btn { display: flex; }
+
+            /* Nav */
+            nav { padding: 12px 16px; }
+            nav .text-lg { font-size: 0.9rem; }
+
+            /* Hero */
+            section.relative.pt-36 { padding-top: 6rem; padding-bottom: 4rem; }
+            h1.text-5xl { font-size: 2.2rem !important; line-height: 1.15 !important; }
+            .hero-orb { display: none; }
+            .float-badge { font-size: 0.75rem; padding: 6px 14px; }
+
+            /* CTA buttons stacked on mobile */
+            .flex.flex-wrap.gap-4 { flex-direction: column; align-items: center; }
+            .install-btn.px-10 { width: 100%; max-width: 320px; justify-content: center; padding: 14px 24px; }
+            a[href="#features"].px-10 { width: 100%; max-width: 320px; text-align: center; padding: 14px 24px; }
+
+            /* Stats */
+            .stat-value { font-size: 2rem !important; }
+
+            /* Feature cards */
+            .feature-card { padding: 1.5rem !important; }
+            .feature-card .glow-icon { width: 48px; height: 48px; margin-bottom: 1rem; }
+            .grid.md\:grid-cols-3 { gap: 1rem; }
+
+            /* Smart detection + blacklist */
+            .grid.md\:grid-cols-2 { gap: 1rem; }
+            .glass.p-10 { padding: 1.5rem; }
+
+            /* Shortcuts */
+            .glass.p-8 { padding: 1.5rem; }
+            kbd { padding: 3px 8px; font-size: 0.75em; }
+            h2.text-4xl { font-size: 1.75rem !important; }
+
+            /* Swiper arrows smaller on mobile */
+            .swiper-button-next, .swiper-button-prev { transform: scale(0.7); }
+            .swiper-button-next { right: 2px !important; }
+            .swiper-button-prev { left: 2px !important; }
+
+            /* CTA bottom */
+            h2.text-4xl.md\:text-6xl { font-size: 1.75rem !important; }
+            .install-btn.px-12 { padding: 14px 28px; font-size: 1rem; }
+
+            /* Footer */
+            footer { padding: 2rem 1rem; }
+
+            /* Browser marquee pills */
+            .marquee-track .glass { padding: 10px 16px; font-size: 0.8rem; }
+        }
+
+        @media (max-width: 480px) {
+            h1.text-5xl { font-size: 1.75rem !important; }
+            .text-lg.md\:text-xl { font-size: 0.95rem; }
+            .feature-card h3 { font-size: 1rem; }
+            .feature-card p { font-size: 0.8rem; }
+            .stat-value { font-size: 1.5rem !important; }
+            .text-xs.uppercase { font-size: 0.6rem; }
         }
     </style>
 </head>
 <body>
+
+    <!-- Custom cursor -->
+    <div class="cursor-icon" id="cursorIcon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path class="cursor-fill" d="M4 1L4 18L8.5 13.5L13 21L16 19.5L11.5 12H18L4 1Z"/>
+            <path class="cursor-stroke" d="M4 1L4 18L8.5 13.5L13 21L16 19.5L11.5 12H18L4 1Z"/>
+        </svg>
+    </div>
 
     <!-- Background layers -->
     <div class="grid-bg"></div>
@@ -381,11 +554,25 @@
                     <span id="themeIcon">🌙</span>
                 </div>
             </div>
-            <a href="https://chromewebstore.google.com/detail/ngdneacppnmejcikcnkccpfdclclkioe" target="_blank" rel="noopener" class="install-btn text-white px-6 py-2.5 rounded-full font-bold text-sm relative z-10">
+            <a href="https://chromewebstore.google.com/detail/ngdneacppnmejcikcnkccpfdclclkioe" target="_blank" rel="noopener" class="install-btn text-white px-6 py-2.5 rounded-full font-bold text-sm relative z-10 hidden sm:inline-flex">
                 Install Free
             </a>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
+
+    <!-- Mobile full-screen nav -->
+    <div class="mobile-nav" id="mobileNav">
+        <a href="#features" class="mobile-nav-link">Features</a>
+        <a href="#showcase" class="mobile-nav-link">Showcase</a>
+        <a href="#shortcuts" class="mobile-nav-link">Shortcuts</a>
+        <a href="#compatibility" class="mobile-nav-link">Browsers</a>
+        <a href="https://chromewebstore.google.com/detail/ngdneacppnmejcikcnkccpfdclclkioe" target="_blank" rel="noopener" class="install-btn text-white px-8 py-3 rounded-full font-bold text-base relative z-10 mt-4">
+            Install Free
+        </a>
+    </div>
 
     <!-- ═══ HERO ═════════════════════════════════════════════════ -->
     <section class="relative pt-36 pb-28 px-6 max-w-7xl mx-auto flex flex-col items-center text-center">
@@ -760,6 +947,131 @@
             if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
         });
     });
+
+    // ── Mobile hamburger menu ───────────────────────────────────
+    (function() {
+        const btn = document.getElementById('mobileMenuBtn');
+        const nav = document.getElementById('mobileNav');
+        btn.addEventListener('click', () => {
+            btn.classList.toggle('active');
+            nav.classList.toggle('open');
+            document.body.style.overflow = nav.classList.contains('open') ? 'hidden' : '';
+        });
+        nav.querySelectorAll('a').forEach(a => {
+            a.addEventListener('click', () => {
+                btn.classList.remove('active');
+                nav.classList.remove('open');
+                document.body.style.overflow = '';
+            });
+        });
+    })();
+
+    // ── Neon cursor with sparkles ───────────────────────────────
+    (function() {
+        const isTouchDevice = window.matchMedia('(hover: none)').matches || window.matchMedia('(pointer: coarse)').matches;
+        if (isTouchDevice) return;
+
+        const cursor = document.getElementById('cursorIcon');
+        let mouseX = -100, mouseY = -100;
+        let sparkleTimer = 0;
+        const SPARKLE_INTERVAL = 80; // ms between sparkles
+        let lastTime = 0;
+        let isMoving = false;
+        let moveTimeout;
+
+        // Neon color palette for sparkles
+        const sparkleColors = [
+            '#a855f7', '#22d3ee', '#ec4899', '#3b82f6', '#f59e0b', '#10b981'
+        ];
+
+        // Color map for hoverable elements
+        const colorMap = [
+            { selector: '.install-btn', cls: 'hover-pink' },
+            { selector: '.neon-link, a[href^="#"], .mobile-nav a', cls: 'hover-link' },
+            { selector: '.theme-toggle', cls: 'hover-amber' },
+            { selector: 'kbd', cls: 'hover-cyan' },
+            { selector: '.feature-card:nth-child(1), .feature-card:nth-child(4)', cls: 'hover-purple' },
+            { selector: '.feature-card:nth-child(2)', cls: 'hover-blue' },
+            { selector: '.feature-card:nth-child(3)', cls: 'hover-pink' },
+            { selector: '.feature-card:nth-child(5)', cls: 'hover-red' },
+            { selector: '.feature-card:nth-child(6)', cls: 'hover-amber' },
+        ];
+        const allClasses = ['hover-purple','hover-cyan','hover-pink','hover-blue','hover-red','hover-amber','hover-link'];
+
+        document.addEventListener('mousemove', e => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            isMoving = true;
+            clearTimeout(moveTimeout);
+            moveTimeout = setTimeout(() => { isMoving = false; }, 100);
+
+            // Check hover color
+            let matched = false;
+            for (const { selector, cls } of colorMap) {
+                if (e.target.closest(selector)) {
+                    cursor.className = 'cursor-icon ' + cls;
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                cursor.className = 'cursor-icon';
+            }
+        });
+
+        document.addEventListener('mouseenter', () => {
+            cursor.style.opacity = '1';
+        });
+        document.addEventListener('mouseleave', () => {
+            cursor.style.opacity = '0';
+        });
+
+        // Animate cursor position
+        function animateCursor(time) {
+            const dt = time - lastTime;
+            lastTime = time;
+            sparkleTimer += dt;
+
+            cursor.style.left = mouseX + 'px';
+            cursor.style.top = mouseY + 'px';
+
+            // Spawn sparkle while moving
+            if (isMoving && sparkleTimer > SPARKLE_INTERVAL) {
+                sparkleTimer = 0;
+                spawnSparkle(mouseX, mouseY);
+            }
+
+            requestAnimationFrame(animateCursor);
+        }
+        requestAnimationFrame(animateCursor);
+
+        function spawnSparkle(x, y) {
+            const s = document.createElement('div');
+            s.className = 'sparkle';
+            const size = Math.random() * 4 + 2;
+            const color = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
+            const offsetX = (Math.random() - 0.5) * 24;
+            const offsetY = (Math.random() - 0.5) * 24;
+            s.style.cssText = `
+                left:${x + offsetX}px;
+                top:${y + offsetY}px;
+                width:${size}px;
+                height:${size}px;
+                background:${color};
+                box-shadow: 0 0 ${size * 2}px ${color}, 0 0 ${size * 4}px ${color};
+                animation: ${Math.random() > 0.5 ? 'sparkleFade' : 'sparkleFloat'} ${0.4 + Math.random() * 0.4}s ease-out forwards;
+            `;
+            document.body.appendChild(s);
+            setTimeout(() => s.remove(), 800);
+        }
+
+        // Extra sparkle burst on click
+        document.addEventListener('click', e => {
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => spawnSparkle(e.clientX, e.clientY), i * 30);
+            }
+        });
+    })();
     </script>
 </body>
 </html>
