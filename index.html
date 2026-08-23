@@ -3,18 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DarkWave — Smart Dark Mode Everywhere</title>
+    <title>Dark Mode for Google Sheets &amp; Docs — DarkWave Extension</title>
+    <meta name="description" content="Free dark mode for Google Sheets, Google Docs and every website. Darkens the whole spreadsheet grid, skips already-dark sites, never flashes white." />
+    <link rel="canonical" href="https://tjmanoj.github.io/darkwave/" />
+
+    <!-- Open Graph / Twitter — controls how the link renders when shared -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tjmanoj.github.io/darkwave/" />
+    <meta property="og:title" content="Dark Mode for Google Sheets &amp; Docs — DarkWave" />
+    <meta property="og:description" content="True dark mode for Google Sheets, Google Docs and every website. Darkens the whole spreadsheet grid, skips already-dark sites, no white flash." />
+    <meta property="og:image" content="https://tjmanoj.github.io/darkwave/images/hero-banner.png" />
+    <meta property="og:image:alt" content="Google Sheets shown in dark mode with DarkWave" />
+    <meta property="og:site_name" content="DarkWave" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Dark Mode for Google Sheets &amp; Docs — DarkWave" />
+    <meta name="twitter:description" content="True dark mode for Google Sheets, Google Docs and every website. No white flash." />
+    <meta name="twitter:image" content="https://tjmanoj.github.io/darkwave/images/hero-banner.png" />
+
     <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg" />
     <link rel="shortcut icon" href="favicon/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
     <link rel="manifest" href="favicon/site.webmanifest" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- All assets are local. This page previously pulled ~623 KB from three
+         third-party hosts before it could render, the worst of it being
+         cdn.tailwindcss.com: 407 KB of JavaScript that is not a stylesheet at
+         all but an in-browser CSS compiler, generating the page's styles at
+         load time. Tailwind's own documentation says that build is for
+         development only. It was render-blocking, so until it downloaded AND
+         executed there were no styles at all.
+
+         css/tailwind.css is the same utilities compiled ahead of time by the
+         Tailwind CLI scanning this file — 18 KB, ~4 KB gzipped, visually
+         identical. Regenerate it after adding or removing classes:
+
+           npx tailwindcss@3 -i input.css -o css/tailwind.css --minify \
+             --content index.html
+
+         Keep this link BEFORE the inline <style> below, which is written to
+         override Tailwind and must stay later in the cascade. -->
+    <link rel="stylesheet" href="css/tailwind.css" />
+    <link rel="stylesheet" href="vendor/aos.css" />
+    <link rel="stylesheet" href="vendor/swiper-bundle.min.css" />
 
     <style>
+        /* Bundled variable fonts — one file each covers the whole weight range.
+           Replaces the Google Fonts stylesheet, which cost a third-party
+           round-trip before first paint and leaked every visitor's IP. */
+        @font-face {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 100 900;
+            font-display: swap;
+            src: url('fonts/inter-latin.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'JetBrains Mono';
+            font-style: normal;
+            font-weight: 400 500;
+            font-display: swap;
+            src: url('fonts/jetbrains-mono-latin.woff2') format('woff2');
+        }
+
         :root {
             --bg-primary: #030303;
             --bg-secondary: #0a0a0f;
@@ -517,6 +567,62 @@
             .text-xs.uppercase { font-size: 0.6rem; }
         }
     </style>
+
+    <!-- SoftwareApplication structured data. Still rich-result eligible per
+         Google's software-app docs; `offers` plus either `aggregateRating` or
+         `review` is the requirement.
+
+         aggregateRating is deliberately OMITTED for now. With 3 ratings,
+         publishing "4.0 from 3 reviews" advertises that almost nobody has
+         reviewed the extension, which costs more clicks than the star markup
+         wins. Add it back once the Web Store listing is past roughly 25
+         ratings, and keep the numbers synced to the live figures — stale or
+         inflated ratings are a manual-action risk. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "DarkWave — Dark Mode for Google Sheets, Docs & Every Website",
+      "alternateName": "DarkWave",
+      "url": "https://tjmanoj.github.io/darkwave/",
+      "installUrl": "https://chromewebstore.google.com/detail/ngdneacppnmejcikcnkccpfdclclkioe",
+      "downloadUrl": "https://chromewebstore.google.com/detail/ngdneacppnmejcikcnkccpfdclclkioe",
+      "applicationCategory": "BrowserApplication",
+      "applicationSubCategory": "Browser Extension",
+      "operatingSystem": "Chrome, Edge, Brave, Vivaldi, Arc, Opera, Firefox",
+      "browserRequirements": "Requires a browser with Manifest V3 extension support",
+      "softwareVersion": "1.1.0",
+      "description": "Dark mode for Google Sheets, Google Docs and every website. Darkens the whole spreadsheet grid, re-inverts images so photos keep their real colours, skips sites that already have a dark theme, and injects at document_start so there is no white flash. Adjustable brightness and contrast, per-site overrides, auto schedule. Makes no network requests.",
+      "featureList": [
+        "Dark mode for the Google Sheets canvas grid, frozen panes and formula bar",
+        "Dark mode for Google Docs and Gmail",
+        "Skips websites that already have their own dark theme",
+        "Per-site dark mode override and a site exclusion list",
+        "Brightness slider from 50 to 100 percent",
+        "Contrast slider from 50 to 120 percent",
+        "Image protection so photos and video keep their original colours",
+        "Auto schedule from sunset to sunrise or any chosen hours",
+        "Keyboard shortcuts to toggle dark mode and to skip a single site",
+        "No white flash - styles are injected at document_start",
+        "Four presets including a true-black option for OLED screens",
+        "No network requests and no data collection"
+      ],
+      "screenshot": "https://tjmanoj.github.io/darkwave/images/slide1.png",
+      "image": "https://tjmanoj.github.io/darkwave/images/logo.png",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "isAccessibleForFree": true,
+      "publisher": {
+        "@type": "Organization",
+        "name": "DarkWave",
+        "url": "https://tjmanoj.github.io/darkwave/"
+      }
+    }
+    </script>
 </head>
 <body>
 
@@ -588,13 +694,19 @@
             Manifest V3 &nbsp;·&nbsp; Zero data collection
         </div>
 
+        <!-- The H1 carries the target query rather than a slogan. Both market
+             leaders rank on long-tail, intent-shaped headings: Dark Reader's H1
+             is literally "How to enable Dark Mode on Facebook, Amazon,
+             YouTube…", and Night Eye's is "Dark Mode Extension for Any
+             Website". Neither ranks on brand voice. -->
         <h1 data-aos="fade-up" class="text-5xl md:text-[5.5rem] font-black mb-8 leading-[1.05] tracking-tight">
-            Dark mode that<br>
-            <span class="gradient-text">actually works.</span>
+            Real dark mode for<br>
+            <span class="gradient-text">Google Sheets, Docs</span><br>
+            and every website.
         </h1>
 
         <p data-aos="fade-up" data-aos-delay="100" class="text-lg md:text-xl max-w-2xl mb-12 leading-relaxed" style="color: var(--text-secondary);">
-            One extension. Every website. Google Sheets, Docs, and the entire web — all properly dark, with <strong style="color: var(--text-primary);">zero white flash</strong>.
+            Sheets draws its grid to a canvas, which is why most extensions leave it blinding white. DarkWave darkens the whole spreadsheet — and the rest of the web — with <strong style="color: var(--text-primary);">zero white flash</strong>.
         </p>
 
         <div data-aos="fade-up" data-aos-delay="200" class="flex flex-wrap gap-4 justify-center mb-14">
@@ -760,22 +872,40 @@
     <section id="shortcuts" class="py-28 text-center relative overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-900/5 to-transparent"></div>
         <div class="relative z-10 max-w-4xl mx-auto px-6">
-            <p data-aos="fade-up" class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--cyan);">Power user</p>
-            <h2 data-aos="fade-up" data-aos-delay="50" class="text-4xl md:text-5xl font-black mb-16">Keyboard Shortcuts</h2>
-            <div class="grid md:grid-cols-2 gap-8">
+            <!-- Framed as "worth knowing", not "power user". The second shortcut
+                 here is the difference between someone hitting one awkward page
+                 and shrugging, versus hitting it and uninstalling — so it is not
+                 an advanced extra, it is core instructions. -->
+            <p data-aos="fade-up" class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--cyan);">Worth knowing</p>
+            <h2 data-aos="fade-up" data-aos-delay="50" class="text-4xl md:text-5xl font-black mb-5">Two keys, and you're set</h2>
+            <p data-aos="fade-up" data-aos-delay="75" class="text-base max-w-xl mx-auto mb-16" style="color: var(--text-secondary);">
+                Both are shown inside the extension too, using whatever keys Chrome actually assigned you.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8 text-left">
                 <div data-aos="fade-up" class="glass p-8 rounded-3xl group">
-                    <div class="mb-6 flex justify-center gap-2">
+                    <div class="mb-6 flex gap-2">
                         <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>D</kbd>
                     </div>
-                    <h4 class="font-bold text-lg mb-2">Toggle Dark Mode</h4>
-                    <p class="text-sm" style="color: var(--text-muted);">Flip dark mode on/off instantly across all tabs</p>
+                    <h4 class="font-bold text-lg mb-2">Turn it on or off</h4>
+                    <p class="text-sm leading-relaxed" style="color: var(--text-muted);">
+                        Flips dark mode across every tab at once, without opening the popup.
+                        A small toast confirms which way it went.
+                    </p>
                 </div>
-                <div data-aos="fade-up" data-aos-delay="100" class="glass p-8 rounded-3xl group">
-                    <div class="mb-6 flex justify-center gap-2">
+                <div data-aos="fade-up" data-aos-delay="100" class="glass p-8 rounded-3xl group" style="border-color: var(--border-hover);">
+                    <div class="mb-6 flex gap-2">
                         <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>B</kbd>
                     </div>
-                    <h4 class="font-bold text-lg mb-2">Blacklist Site</h4>
-                    <p class="text-sm" style="color: var(--text-muted);">Permanently exclude the current site from dark mode</p>
+                    <h4 class="font-bold text-lg mb-2">A page looks wrong? Skip that site</h4>
+                    <p class="text-sm leading-relaxed" style="color: var(--text-muted);">
+                        Dark mode works by inverting the page, and a few sites fight that —
+                        archive viewers, canvas-heavy apps, pages with odd inline styling.
+                        One keystroke excludes just that site and reloads it untouched.
+                        Press it again to bring DarkWave back.
+                    </p>
+                    <p class="text-sm leading-relaxed mt-3" style="color: var(--text-secondary);">
+                        You never have to choose between one awkward page and the whole extension.
+                    </p>
                 </div>
             </div>
         </div>
@@ -829,13 +959,12 @@
         <p class="text-xs" style="color: var(--text-muted);">Built for the privacy-conscious web. Zero data collection.</p>
         <div class="flex justify-center gap-6 mt-6">
             <a href="PRIVACY.md" class="neon-link text-xs">Privacy Policy</a>
-            <a href="https://github.com" class="neon-link text-xs">GitHub</a>
         </div>
     </footer>
 
     <!-- ═══ SCRIPTS ══════════════════════════════════════════════ -->
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="vendor/aos.js"></script>
+    <script src="vendor/swiper-bundle.min.js"></script>
     <script>
     // ── AOS ──────────────────────────────────────────────────────
     AOS.init({ duration: 800, once: true, easing: 'ease-out-cubic', offset: 60 });
