@@ -43,7 +43,6 @@
          Keep this link BEFORE the inline <style> below, which is written to
          override Tailwind and must stay later in the cascade. -->
     <link rel="stylesheet" href="css/tailwind.css" />
-    <link rel="stylesheet" href="vendor/aos.css" />
     <link rel="stylesheet" href="vendor/swiper-bundle.min.css" />
 
     <style>
@@ -116,10 +115,8 @@
             background-size: 80px 80px;
             mask-image: radial-gradient(ellipse 60% 40% at 50% 0%, black 20%, transparent 100%);
             -webkit-mask-image: radial-gradient(ellipse 60% 40% at 50% 0%, black 20%, transparent 100%);
-            animation: gridShift 20s linear infinite;
         }
         [data-theme="light"] .grid-bg { opacity: 0.4; }
-        @keyframes gridShift { to { background-position: 80px 80px; } }
 
         /* ─── Animated aurora blobs ──────────────────────────────── */
         .aurora {
@@ -129,20 +126,12 @@
             opacity: 0.18;
             z-index: 0;
             pointer-events: none;
-            animation: auroraFloat 12s ease-in-out infinite alternate;
         }
         .aurora-1 { width: 700px; height: 700px; background: var(--purple); top: -250px; right: -200px; }
-        .aurora-2 { width: 550px; height: 550px; background: var(--blue); bottom: -150px; left: -200px; animation-delay: -4s; animation-duration: 16s; }
-        .aurora-3 { width: 450px; height: 450px; background: var(--cyan); top: 35%; left: 45%; animation-delay: -8s; animation-duration: 14s; opacity: 0.08; }
+        .aurora-2 { width: 550px; height: 550px; background: var(--blue); bottom: -150px; left: -200px; }
+        .aurora-3 { width: 450px; height: 450px; background: var(--cyan); top: 35%; left: 45%; opacity: 0.08; }
         [data-theme="light"] .aurora { opacity: 0.08; }
-        @keyframes auroraFloat {
-            0%   { transform: translate(0, 0) scale(1); }
-            50%  { transform: translate(30px, -40px) scale(1.15); }
-            100% { transform: translate(-20px, 30px) scale(0.95); }
-        }
 
-        /* ─── Particle canvas ────────────────────────────────────── */
-        #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
         /* ─── Glass morphism ─────────────────────────────────────── */
         .glass {
@@ -177,12 +166,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-size: 200% 200%;
-            animation: gradientShift 4s ease infinite;
-        }
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+            background-size: 100% 100%;
         }
 
         /* ─── Neon underline ─────────────────────────────────────── */
@@ -210,8 +194,7 @@
         .install-btn {
             position: relative;
             background: linear-gradient(135deg, #9333ea, #7c3aed, #6366f1);
-            background-size: 200% 200%;
-            animation: gradientShift 3s ease infinite;
+            background-size: 100% 100%;
             box-shadow: 0 0 20px rgba(147,51,234,0.4), 0 0 60px rgba(147,51,234,0.15);
             transition: all 0.3s;
         }
@@ -225,16 +208,10 @@
             inset: -2px;
             border-radius: inherit;
             background: linear-gradient(135deg, var(--purple), var(--cyan), var(--pink), var(--purple));
-            background-size: 400% 400%;
-            animation: borderGlow 6s linear infinite;
+            background-size: 100% 100%;
             z-index: -1;
             filter: blur(8px);
             opacity: 0.5;
-        }
-        @keyframes borderGlow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
         }
 
         /* ─── Theme toggle ───────────────────────────────────────── */
@@ -310,15 +287,6 @@
             z-index: -1;
         }
 
-        /* ─── Floating badge ─────────────────────────────────────── */
-        .float-badge {
-            animation: floatBadge 3s ease-in-out infinite;
-        }
-        @keyframes floatBadge {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
-        }
-
         /* ─── Keyboard keys ──────────────────────────────────────── */
         kbd {
             background: rgba(255,255,255,0.05);
@@ -359,16 +327,10 @@
         }
 
         /* ─── Pulse ring animation ───────────────────────────────── */
-        @keyframes pulseRing {
-            0% { box-shadow: 0 0 0 0 rgba(168,85,247,0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(168,85,247,0); }
-            100% { box-shadow: 0 0 0 0 rgba(168,85,247,0); }
-        }
-        .pulse-ring { animation: pulseRing 2s ease-out infinite; }
 
         /* ─── Reveal animations ──────────────────────────────────── */
-        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1); }
-        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal { opacity: 1; }
+        
 
         /* ─── Hero glow orbs ─────────────────────────────────────── */
         .hero-orb {
@@ -376,22 +338,15 @@
             border-radius: 50%;
             filter: blur(80px);
             pointer-events: none;
-            animation: orbPulse 5s ease-in-out infinite alternate;
-        }
-        @keyframes orbPulse {
-            0% { opacity: 0.3; transform: scale(1); }
-            100% { opacity: 0.6; transform: scale(1.2); }
+            opacity: 0.45;
         }
 
         /* ─── Marquee ────────────────────────────────────────────── */
         .marquee-track {
             display: flex;
-            animation: marquee 30s linear infinite;
-            will-change: transform;
-        }
-        @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            flex-wrap: wrap;
+            justify-content: center;
+            row-gap: 12px;
         }
 
         /* ─── Smooth section transitions ─────────────────────────── */
@@ -425,22 +380,6 @@
         .cursor-icon.hover-red    .cursor-fill { fill: #ef4444; }
         .cursor-icon.hover-amber  .cursor-fill { fill: #f59e0b; }
         .cursor-icon.hover-link   .cursor-fill { fill: #22d3ee; }
-
-        .sparkle {
-            position: fixed;
-            pointer-events: none;
-            z-index: 99997;
-            border-radius: 50%;
-            animation: sparkleFade 0.6s ease-out forwards;
-        }
-        @keyframes sparkleFade {
-            0% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-            100% { opacity: 0; transform: translate(-50%,-50%) scale(0) translateY(-20px); }
-        }
-        @keyframes sparkleFloat {
-            0% { opacity: 1; transform: translate(-50%,-50%) scale(1) rotate(0deg); }
-            100% { opacity: 0; transform: translate(-50%,-50%) scale(0) rotate(180deg) translateY(-30px); }
-        }
 
         /* Hide custom cursor on touch devices */
         @media (hover: none), (pointer: coarse) {
@@ -639,8 +578,7 @@
     <div class="aurora aurora-1"></div>
     <div class="aurora aurora-2"></div>
     <div class="aurora aurora-3"></div>
-    <canvas id="particles"></canvas>
-    <div class="scroll-progress" id="scrollProgress"></div>
+        <div class="scroll-progress" id="scrollProgress"></div>
 
     <!-- ═══ NAVIGATION ═══════════════════════════════════════════ -->
     <nav class="fixed w-full z-50 glass py-3 px-6 flex justify-between items-center" style="backdrop-filter: blur(30px) saturate(1.5);">
@@ -686,7 +624,7 @@
         <div class="hero-orb w-[300px] h-[300px] bg-purple-600 -top-20 -left-32"></div>
         <div class="hero-orb w-[200px] h-[200px] bg-cyan-500 top-40 -right-20" style="animation-delay:-2s;"></div>
 
-        <div data-aos="zoom-in" class="float-badge mb-8 inline-flex items-center gap-2 px-5 py-2 rounded-full border border-purple-500/20 bg-purple-500/5 text-purple-400 text-sm font-medium">
+        <div class="float-badge mb-8 inline-flex items-center gap-2 px-5 py-2 rounded-full border border-purple-500/20 bg-purple-500/5 text-purple-400 text-sm font-medium">
             <span class="relative flex h-2 w-2">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
@@ -699,17 +637,17 @@
              is literally "How to enable Dark Mode on Facebook, Amazon,
              YouTube…", and Night Eye's is "Dark Mode Extension for Any
              Website". Neither ranks on brand voice. -->
-        <h1 data-aos="fade-up" class="text-5xl md:text-[5.5rem] font-black mb-8 leading-[1.05] tracking-tight">
+        <h1 class="text-5xl md:text-[5.5rem] font-black mb-8 leading-[1.05] tracking-tight">
             Real dark mode for<br>
             <span class="gradient-text">Google Sheets, Docs</span><br>
             and every website.
         </h1>
 
-        <p data-aos="fade-up" data-aos-delay="100" class="text-lg md:text-xl max-w-2xl mb-12 leading-relaxed" style="color: var(--text-secondary);">
+        <p class="text-lg md:text-xl max-w-2xl mb-12 leading-relaxed" style="color: var(--text-secondary);">
             Sheets draws its grid to a canvas, which is why most extensions leave it blinding white. DarkWave darkens the whole spreadsheet — and the rest of the web — with <strong style="color: var(--text-primary);">zero white flash</strong>.
         </p>
 
-        <div data-aos="fade-up" data-aos-delay="200" class="flex flex-wrap gap-4 justify-center mb-14">
+        <div class="flex flex-wrap gap-4 justify-center mb-14">
             <a href="https://chromewebstore.google.com/detail/ngdneacppnmejcikcnkccpfdclclkioe" target="_blank" rel="noopener" class="install-btn text-white px-10 py-4 rounded-full font-bold text-base relative z-10 flex items-center gap-2">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.454 5.454 0 0 1 12 6.545h10.691A12 12 0 0 0 12 0zM1.931 5.47A11.943 11.943 0 0 0 0 12c0 6.012 4.42 10.991 10.189 11.864l3.953-6.847a5.45 5.45 0 0 1-6.865-2.29zm13.342 2.166-3.953 6.848a5.454 5.454 0 0 1 6.865 2.29l3.953-6.849A11.94 11.94 0 0 0 19.636 5.47z"/></svg>
                 Install for Chrome
@@ -720,7 +658,7 @@
         </div>
 
         <!-- Hero image with glow frame -->
-        <div data-aos="fade-up" data-aos-delay="300" class="w-full max-w-5xl relative group">
+        <div class="w-full max-w-5xl relative group">
             <div class="absolute -inset-1 bg-gradient-to-r from-purple-600/20 via-cyan-500/20 to-pink-500/20 rounded-3xl blur-xl opacity-50 group-hover:opacity-80 transition duration-700"></div>
             <div class="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
                 <img src="images/hero-banner.png" alt="DarkWave Dashboard" class="w-full">
@@ -733,19 +671,19 @@
         <div class="absolute inset-0 bg-gradient-to-r from-purple-900/10 via-transparent to-cyan-900/10"></div>
         <div class="relative glass border-y border-white/5">
             <div class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                <div data-aos="zoom-in">
+                <div>
                     <h3 class="text-4xl md:text-5xl font-black stat-value" data-count="0">0</h3>
                     <p class="text-xs uppercase tracking-[0.25em] mt-2" style="color: var(--text-muted);">White Flashes</p>
                 </div>
-                <div data-aos="zoom-in" data-aos-delay="100">
+                <div>
                     <h3 class="text-4xl md:text-5xl font-black stat-value" data-count="2">2</h3>
                     <p class="text-xs uppercase tracking-[0.25em] mt-2" style="color: var(--text-muted);">Keyboard Shortcuts</p>
                 </div>
-                <div data-aos="zoom-in" data-aos-delay="200">
+                <div>
                     <h3 class="text-4xl md:text-5xl font-black stat-value" data-count="4">4</h3>
                     <p class="text-xs uppercase tracking-[0.25em] mt-2" style="color: var(--text-muted);">Dark Presets</p>
                 </div>
-                <div data-aos="zoom-in" data-aos-delay="300">
+                <div>
                     <h3 class="text-4xl md:text-5xl font-black stat-value">∞</h3>
                     <p class="text-xs uppercase tracking-[0.25em] mt-2" style="color: var(--text-muted);">Sites Supported</p>
                 </div>
@@ -756,43 +694,43 @@
     <!-- ═══ FEATURES GRID ════════════════════════════════════════ -->
     <section id="features" class="py-28 px-6 max-w-7xl mx-auto">
         <div class="text-center mb-20">
-            <p data-aos="fade-up" class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--purple);">What makes us different</p>
-            <h2 data-aos="fade-up" data-aos-delay="50" class="text-4xl md:text-5xl font-black">Core Features</h2>
+            <p class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--purple);">What makes us different</p>
+            <h2 class="text-4xl md:text-5xl font-black">Core Features</h2>
         </div>
         <div class="grid md:grid-cols-3 gap-8">
             <!-- Card 1 -->
-            <div data-aos="fade-up" class="glass feature-card p-10 rounded-3xl group">
+            <div class="glass feature-card p-10 rounded-3xl group">
                 <div class="glow-icon bg-purple-600/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-7 text-2xl group-hover:scale-110 transition-transform duration-300">📊</div>
                 <h3 class="text-xl font-bold mb-3">Google Sheets & Docs</h3>
                 <p class="leading-relaxed text-sm" style="color: var(--text-secondary);">Properly darkens canvas-rendered spreadsheet cells — not just the toolbar. Works out of the box.</p>
             </div>
             <!-- Card 2 -->
-            <div data-aos="fade-up" data-aos-delay="100" class="glass feature-card p-10 rounded-3xl group relative">
+            <div class="glass feature-card p-10 rounded-3xl group relative">
                 <div class="absolute top-4 right-4 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">First</div>
                 <div class="glow-icon bg-blue-600/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-7 text-2xl group-hover:scale-110 transition-transform duration-300">⚡</div>
                 <h3 class="text-xl font-bold mb-3">Zero White Flash</h3>
                 <p class="leading-relaxed text-sm" style="color: var(--text-secondary);">Injects dark mode before the page renders a single pixel. No flicker, ever. A DarkWave exclusive.</p>
             </div>
             <!-- Card 3 -->
-            <div data-aos="fade-up" data-aos-delay="200" class="glass feature-card p-10 rounded-3xl group">
+            <div class="glass feature-card p-10 rounded-3xl group">
                 <div class="glow-icon bg-pink-600/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-7 text-2xl group-hover:scale-110 transition-transform duration-300">⚙️</div>
                 <h3 class="text-xl font-bold mb-3">Fully Configurable</h3>
                 <p class="leading-relaxed text-sm" style="color: var(--text-secondary);">Adjust brightness, contrast, and smooth transitions. Includes auto-schedule and four quick presets.</p>
             </div>
             <!-- Card 4 -->
-            <div data-aos="fade-up" data-aos-delay="50" class="glass feature-card p-10 rounded-3xl group">
+            <div class="glass feature-card p-10 rounded-3xl group">
                 <div class="glow-icon bg-cyan-600/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-7 text-2xl group-hover:scale-110 transition-transform duration-300">🧠</div>
                 <h3 class="text-xl font-bold mb-3">Smart Detection</h3>
                 <p class="leading-relaxed text-sm" style="color: var(--text-secondary);">Auto-detects when a site already has dark mode and silently skips it. No double-inverting.</p>
             </div>
             <!-- Card 5 -->
-            <div data-aos="fade-up" data-aos-delay="150" class="glass feature-card p-10 rounded-3xl group">
+            <div class="glass feature-card p-10 rounded-3xl group">
                 <div class="glow-icon bg-red-600/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-7 text-2xl group-hover:scale-110 transition-transform duration-300">🚫</div>
                 <h3 class="text-xl font-bold mb-3">One-Click Blacklist</h3>
                 <p class="leading-relaxed text-sm" style="color: var(--text-secondary);">Blacklist any site with a keyboard shortcut. DarkWave will never touch it again.</p>
             </div>
             <!-- Card 6 -->
-            <div data-aos="fade-up" data-aos-delay="250" class="glass feature-card p-10 rounded-3xl group">
+            <div class="glass feature-card p-10 rounded-3xl group">
                 <div class="glow-icon bg-amber-600/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-7 text-2xl group-hover:scale-110 transition-transform duration-300">🖼️</div>
                 <h3 class="text-xl font-bold mb-3">Image Protection</h3>
                 <p class="leading-relaxed text-sm" style="color: var(--text-secondary);">Re-inverts images and videos so photos look natural — not neon-tinted or color-swapped.</p>
@@ -805,11 +743,11 @@
         <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent"></div>
         <div class="max-w-5xl mx-auto px-6 relative z-10">
             <div class="text-center mb-16">
-                <p data-aos="fade-up" class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--purple);">In Action</p>
-                <h2 data-aos="fade-up" data-aos-delay="50" class="text-4xl md:text-5xl font-black mb-4">See the Difference</h2>
-                <p data-aos="fade-up" data-aos-delay="100" style="color: var(--text-secondary);">Perfectly adapted for your favorite tools.</p>
+                <p class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--purple);">In Action</p>
+                <h2 class="text-4xl md:text-5xl font-black mb-4">See the Difference</h2>
+                <p style="color: var(--text-secondary);">Perfectly adapted for your favorite tools.</p>
             </div>
-            <div data-aos="fade-up" data-aos-delay="200" class="relative group">
+            <div class="relative group">
                 <div class="absolute -inset-2 bg-gradient-to-r from-purple-600/10 via-cyan-500/10 to-pink-500/10 rounded-3xl blur-2xl opacity-40 group-hover:opacity-70 transition duration-700"></div>
                 <div class="swiper mySwiper rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden">
                     <div class="swiper-wrapper">
@@ -829,7 +767,7 @@
 
     <!-- ═══ SMART DETECTION + BLACKLIST ══════════════════════════ -->
     <section class="py-28 px-6 max-w-7xl mx-auto grid md:grid-cols-2 gap-10">
-        <div data-aos="fade-right" class="glass p-10 rounded-3xl relative overflow-hidden group">
+        <div class="glass p-10 rounded-3xl relative overflow-hidden group">
             <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 via-purple-600 to-transparent"></div>
             <span class="text-xs font-bold uppercase tracking-[0.25em]" style="color: var(--purple);">Auto-Detection</span>
             <h3 class="text-2xl font-bold mt-5 mb-5">Native Dark Mode Awareness</h3>
@@ -853,7 +791,7 @@
                 </li>
             </ul>
         </div>
-        <div data-aos="fade-left" class="glass p-10 rounded-3xl relative overflow-hidden group">
+        <div class="glass p-10 rounded-3xl relative overflow-hidden group">
             <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-red-500 via-red-600 to-transparent"></div>
             <span class="text-xs font-bold uppercase tracking-[0.25em] text-red-400">Blacklist</span>
             <h3 class="text-2xl font-bold mt-5 mb-5">One-Keystroke Blacklist</h3>
@@ -876,13 +814,13 @@
                  here is the difference between someone hitting one awkward page
                  and shrugging, versus hitting it and uninstalling — so it is not
                  an advanced extra, it is core instructions. -->
-            <p data-aos="fade-up" class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--cyan);">Worth knowing</p>
-            <h2 data-aos="fade-up" data-aos-delay="50" class="text-4xl md:text-5xl font-black mb-5">Two keys, and you're set</h2>
-            <p data-aos="fade-up" data-aos-delay="75" class="text-base max-w-xl mx-auto mb-16" style="color: var(--text-secondary);">
+            <p class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--cyan);">Worth knowing</p>
+            <h2 class="text-4xl md:text-5xl font-black mb-5">Two keys, and you're set</h2>
+            <p class="text-base max-w-xl mx-auto mb-16" style="color: var(--text-secondary);">
                 Both are shown inside the extension too, using whatever keys Chrome actually assigned you.
             </p>
             <div class="grid md:grid-cols-2 gap-8 text-left">
-                <div data-aos="fade-up" class="glass p-8 rounded-3xl group">
+                <div class="glass p-8 rounded-3xl group">
                     <div class="mb-6 flex gap-2">
                         <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>D</kbd>
                     </div>
@@ -892,7 +830,7 @@
                         A small toast confirms which way it went.
                     </p>
                 </div>
-                <div data-aos="fade-up" data-aos-delay="100" class="glass p-8 rounded-3xl group" style="border-color: var(--border-hover);">
+                <div class="glass p-8 rounded-3xl group" style="border-color: var(--border-hover);">
                     <div class="mb-6 flex gap-2">
                         <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>B</kbd>
                     </div>
@@ -914,20 +852,12 @@
     <!-- ═══ BROWSER MARQUEE ══════════════════════════════════════ -->
     <section id="compatibility" class="py-24 border-t border-b" style="border-color: var(--border);">
         <div class="text-center mb-14">
-            <p data-aos="fade-up" class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--text-muted);">Compatibility</p>
-            <h2 data-aos="fade-up" data-aos-delay="50" class="text-4xl md:text-5xl font-black">Works Everywhere</h2>
+            <p class="text-xs uppercase tracking-[0.3em] mb-4" style="color: var(--text-muted);">Compatibility</p>
+            <h2 class="text-4xl md:text-5xl font-black">Works Everywhere</h2>
         </div>
         <div class="overflow-hidden">
             <div class="marquee-track">
-                <div class="flex gap-6 px-3">
-                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🌐 Chrome 88+</span>
-                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🦁 Brave</span>
-                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🔷 Edge</span>
-                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🏄 Arc</span>
-                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🔴 Opera</span>
-                    <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🎵 Vivaldi</span>
-                </div>
-                <div class="flex gap-6 px-3" aria-hidden="true">
+                <div class="flex flex-wrap justify-center gap-6 px-3">
                     <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🌐 Chrome 88+</span>
                     <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🦁 Brave</span>
                     <span class="glass px-8 py-4 rounded-2xl text-sm font-medium whitespace-nowrap" style="color: var(--text-secondary);">🔷 Edge</span>
@@ -943,9 +873,9 @@
     <section class="py-32 px-6 text-center relative overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-t from-purple-900/10 via-transparent to-transparent"></div>
         <div class="relative z-10 max-w-3xl mx-auto">
-            <h2 data-aos="fade-up" class="text-4xl md:text-6xl font-black mb-8 leading-tight">Ready to go <span class="gradient-text">dark</span>?</h2>
-            <p data-aos="fade-up" data-aos-delay="100" class="text-lg mb-12" style="color: var(--text-secondary);">Install DarkWave in seconds. Free, private, and open-source.</p>
-            <a data-aos="zoom-in" data-aos-delay="200" href="https://chromewebstore.google.com/detail/ngdneacppnmejcikcnkccpfdclclkioe" target="_blank" rel="noopener" class="install-btn inline-flex items-center gap-3 text-white px-12 py-5 rounded-full font-bold text-lg relative z-10">
+            <h2 class="text-4xl md:text-6xl font-black mb-8 leading-tight">Ready to go <span class="gradient-text">dark</span>?</h2>
+            <p class="text-lg mb-12" style="color: var(--text-secondary);">Install DarkWave in seconds. Free, private, and open-source.</p>
+            <a href="https://chromewebstore.google.com/detail/ngdneacppnmejcikcnkccpfdclclkioe" target="_blank" rel="noopener" class="install-btn inline-flex items-center gap-3 text-white px-12 py-5 rounded-full font-bold text-lg relative z-10">
                 <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.454 5.454 0 0 1 12 6.545h10.691A12 12 0 0 0 12 0zM1.931 5.47A11.943 11.943 0 0 0 0 12c0 6.012 4.42 10.991 10.189 11.864l3.953-6.847a5.45 5.45 0 0 1-6.865-2.29zm13.342 2.166-3.953 6.848a5.454 5.454 0 0 1 6.865 2.29l3.953-6.849A11.94 11.94 0 0 0 19.636 5.47z"/></svg>
                 Install DarkWave — It's Free
             </a>
@@ -960,12 +890,12 @@
          reachable from here to get crawled. -->
     <section id="guides" class="py-24 px-6 border-t" style="border-color: var(--border);">
         <div class="max-w-3xl mx-auto">
-            <p data-aos="fade-up" class="text-xs uppercase tracking-[0.3em] mb-4 text-center" style="color: var(--text-muted);">Guides</p>
-            <h2 data-aos="fade-up" data-aos-delay="50" class="text-3xl md:text-4xl font-black mb-4 text-center">Dark mode, app by app</h2>
-            <p data-aos="fade-up" data-aos-delay="75" class="text-base mb-12 text-center" style="color: var(--text-secondary);">
+            <p class="text-xs uppercase tracking-[0.3em] mb-4 text-center" style="color: var(--text-muted);">Guides</p>
+            <h2 class="text-3xl md:text-4xl font-black mb-4 text-center">Dark mode, app by app</h2>
+            <p class="text-base mb-12 text-center" style="color: var(--text-secondary);">
                 What each Google app can and cannot do on its own, and what actually works on a desktop.
             </p>
-            <div data-aos="fade-up" data-aos-delay="100" class="grid sm:grid-cols-2 gap-4">
+            <div class="grid sm:grid-cols-2 gap-4">
                 <a href="google-sheets-dark-mode/" class="glass p-6 rounded-2xl block">
                     <h3 class="font-bold mb-1">Dark mode for Google Sheets</h3>
                     <p class="text-sm" style="color: var(--text-muted);">No desktop setting exists. Why the cell grid is the hard part.</p>
@@ -997,11 +927,8 @@
     </footer>
 
     <!-- ═══ SCRIPTS ══════════════════════════════════════════════ -->
-    <script src="vendor/aos.js"></script>
     <script src="vendor/swiper-bundle.min.js"></script>
     <script>
-    // ── AOS ──────────────────────────────────────────────────────
-    AOS.init({ duration: 800, once: true, easing: 'ease-out-cubic', offset: 60 });
 
     // ── Swiper ──────────────────────────────────────────────────
     new Swiper('.mySwiper', {
@@ -1009,9 +936,8 @@
         grabCursor: true,
         pagination: { el: '.swiper-pagination', clickable: true },
         navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-        autoplay: { delay: 3500, disableOnInteraction: false },
         effect: 'slide',
-        speed: 600,
+        speed: 0,
     });
 
     // ── Theme toggle ────────────────────────────────────────────
@@ -1033,102 +959,6 @@
         bar.style.width = (window.scrollY / h * 100) + '%';
     }, { passive: true });
 
-    // ── Particle canvas — lightweight with smooth cursor repulsion ─
-    (function() {
-        const c = document.getElementById('particles');
-        const ctx = c.getContext('2d');
-        let w, h, pts = [];
-        const COUNT = 130;
-
-        let mx = -9999, my = -9999;
-        document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; }, { passive: true });
-        document.addEventListener('mouseleave', () => { mx = -9999; my = -9999; });
-
-        const PAL = [
-            [110, 130, 255],
-            [145,  85, 255],
-            [ 85, 165, 255],
-            [185,  85, 225],
-            [125, 190, 255],
-            [165,  85, 245],
-            [200, 100, 200],
-        ];
-
-        function resize() { w = c.width = window.innerWidth; h = c.height = window.innerHeight; }
-        resize();
-        window.addEventListener('resize', resize, { passive: true });
-
-        function spawn(fill) {
-            const [r, g, b] = PAL[Math.floor(Math.random() * PAL.length)];
-            const depth = Math.random();
-            const bvx = (Math.random() - 0.5) * (0.12 + depth * 0.28);
-            const bvy = -(0.08 + depth * 0.48);
-            return {
-                x: Math.random() * w,
-                y: fill ? Math.random() * h : h + 12,
-                // Half the sizes from before
-                pw: 0.6 + depth * 1.1,   // 0.6–1.7 px wide
-                ph: 2.5 + depth * 6.5,   // 2.5–9 px tall
-                bvx, bvy,
-                vx: bvx, vy: bvy,
-                rot:  Math.random() * Math.PI * 2,
-                rotV: (Math.random() - 0.5) * 0.005,
-                r, g, b,
-                a: 0.2 + depth * 0.6,
-            };
-        }
-
-        for (let i = 0; i < COUNT; i++) pts.push(spawn(true));
-
-        const R2 = 140 * 140;  // repulsion radius squared (avoids sqrt for most particles)
-        const R  = 140;
-        const F  = 1.3;
-        const LR = 0.045;      // lerp-back speed
-
-        function draw() {
-            ctx.clearRect(0, 0, w, h);
-            const dark = html.dataset.theme !== 'light';
-
-            for (const p of pts) {
-                // Lerp velocity back toward natural drift
-                p.vx += (p.bvx - p.vx) * LR;
-                p.vy += (p.bvy - p.vy) * LR;
-
-                // Cheap squared-distance check; only sqrt when inside radius
-                const dx = p.x - mx, dy = p.y - my;
-                const d2 = dx * dx + dy * dy;
-                let prox = 0;
-                if (d2 < R2 && d2 > 1) {
-                    const dist = Math.sqrt(d2);
-                    const t = 1 - dist / R;
-                    const f = t * t * F;
-                    p.vx += dx / dist * f;
-                    p.vy += dy / dist * f;
-                    prox  = t;
-                }
-
-                p.x += p.vx;  p.y += p.vy;  p.rot += p.rotV;
-
-                if (p.y < -15 || p.x < -30 || p.x > w + 30) {
-                    Object.assign(p, spawn(false));
-                    p.x = Math.random() * w;
-                }
-
-                ctx.save();
-                ctx.globalAlpha = Math.min((p.a + prox * 0.3) * (dark ? 1 : 0.22), 0.92);
-                ctx.translate(p.x, p.y);
-                ctx.rotate(p.rot);
-                // Single ellipse call — far cheaper than the 8-step pill path
-                ctx.beginPath();
-                ctx.ellipse(0, 0, p.pw * (1 + prox * 0.35), p.ph * (1 + prox * 0.2), 0, 0, Math.PI * 2);
-                ctx.fillStyle = `rgb(${p.r},${p.g},${p.b})`;
-                ctx.fill();
-                ctx.restore();
-            }
-            requestAnimationFrame(draw);
-        }
-        draw();
-    })();
 
     // ── Mouse-follow radial glow on feature cards ───────────────
     document.querySelectorAll('.feature-card').forEach(card => {
@@ -1165,25 +995,14 @@
         });
     })();
 
-    // ── Neon cursor with sparkles ───────────────────────────────
+    // ── Neon cursor ─────────────────────────────────────────────
     (function() {
         const isTouchDevice = window.matchMedia('(hover: none)').matches || window.matchMedia('(pointer: coarse)').matches;
         if (isTouchDevice) return;
 
         const cursor = document.getElementById('cursorIcon');
-        let mouseX = -100, mouseY = -100;
-        let sparkleTimer = 0;
-        const SPARKLE_INTERVAL = 80; // ms between sparkles
-        let lastTime = 0;
-        let isMoving = false;
-        let moveTimeout;
 
-        // Neon color palette for sparkles
-        const sparkleColors = [
-            '#a855f7', '#22d3ee', '#ec4899', '#3b82f6', '#f59e0b', '#10b981'
-        ];
-
-        // Color map for hoverable elements
+        // Colour map for hoverable elements
         const colorMap = [
             { selector: '.install-btn', cls: 'hover-pink' },
             { selector: '.neon-link, a[href^="#"], .mobile-nav a', cls: 'hover-link' },
@@ -1198,11 +1017,8 @@
         const allClasses = ['hover-purple','hover-cyan','hover-pink','hover-blue','hover-red','hover-amber','hover-link'];
 
         document.addEventListener('mousemove', e => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            isMoving = true;
-            clearTimeout(moveTimeout);
-            moveTimeout = setTimeout(() => { isMoving = false; }, 100);
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
 
             // Check hover color
             let matched = false;
@@ -1223,52 +1039,6 @@
         });
         document.addEventListener('mouseleave', () => {
             cursor.style.opacity = '0';
-        });
-
-        // Animate cursor position
-        function animateCursor(time) {
-            const dt = time - lastTime;
-            lastTime = time;
-            sparkleTimer += dt;
-
-            cursor.style.left = mouseX + 'px';
-            cursor.style.top = mouseY + 'px';
-
-            // Spawn sparkle while moving
-            if (isMoving && sparkleTimer > SPARKLE_INTERVAL) {
-                sparkleTimer = 0;
-                spawnSparkle(mouseX, mouseY);
-            }
-
-            requestAnimationFrame(animateCursor);
-        }
-        requestAnimationFrame(animateCursor);
-
-        function spawnSparkle(x, y) {
-            const s = document.createElement('div');
-            s.className = 'sparkle';
-            const size = Math.random() * 4 + 2;
-            const color = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
-            const offsetX = (Math.random() - 0.5) * 24;
-            const offsetY = (Math.random() - 0.5) * 24;
-            s.style.cssText = `
-                left:${x + offsetX}px;
-                top:${y + offsetY}px;
-                width:${size}px;
-                height:${size}px;
-                background:${color};
-                box-shadow: 0 0 ${size * 2}px ${color}, 0 0 ${size * 4}px ${color};
-                animation: ${Math.random() > 0.5 ? 'sparkleFade' : 'sparkleFloat'} ${0.4 + Math.random() * 0.4}s ease-out forwards;
-            `;
-            document.body.appendChild(s);
-            setTimeout(() => s.remove(), 800);
-        }
-
-        // Extra sparkle burst on click
-        document.addEventListener('click', e => {
-            for (let i = 0; i < 8; i++) {
-                setTimeout(() => spawnSparkle(e.clientX, e.clientY), i * 30);
-            }
         });
     })();
     </script>
