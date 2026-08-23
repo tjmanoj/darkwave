@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Sheets Dark Mode — How to Get It on Desktop (2026)</title>
+<meta name="description" content="Google Sheets has no built-in dark mode on desktop. Here is why, what the workarounds actually do, and how to darken the whole grid including every cell.">
+<link rel="canonical" href="https://tjmanoj.github.io/darkwave/google-sheets-dark-mode/">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tjmanoj.github.io/darkwave/google-sheets-dark-mode/">
+<meta property="og:title" content="Google Sheets Dark Mode — How to Get It on Desktop (2026)">
+<meta property="og:description" content="Google Sheets has no built-in dark mode on desktop. Here is why, what the workarounds actually do, and how to darken the whole grid including every cell.">
+<meta property="og:image" content="https://tjmanoj.github.io/darkwave/images/hero-banner.png">
+<meta property="og:site_name" content="DarkWave">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="../favicon/favicon-96x96.png" sizes="96x96">
+<link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
+<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#08080c;--bg2:#101018;--bd:#ffffff14;--tx:#eceaf6;--dim:#a3a0bd;--dimmer:#6f6c8c;--pu:#a855f7;--cy:#22d3ee}
+@font-face{font-family:'Inter';font-style:normal;font-weight:100 900;font-display:swap;src:url('../fonts/inter-latin.woff2') format('woff2')}
+html{background:var(--bg);-webkit-text-size-adjust:100%}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:40px 24px 96px}
+a{color:var(--cy);text-decoration:none}a:hover{text-decoration:underline}
+nav.top{display:flex;align-items:center;gap:10px;margin-bottom:56px;font-weight:700;font-size:18px;letter-spacing:-.02em}
+nav.top .mk{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--pu),var(--cy));position:relative;flex:none}
+nav.top .mk::after{content:'';position:absolute;inset:0;border-radius:50%;background:var(--bg);transform:translate(28%,-10%) scale(.94)}
+nav.top a{color:var(--tx)}
+h1{font-size:clamp(30px,5vw,44px);line-height:1.14;letter-spacing:-.03em;font-weight:800;margin-bottom:20px}
+.lede{font-size:19px;color:var(--dim);margin-bottom:14px}
+.meta{font-size:13px;color:var(--dimmer);margin-bottom:40px}
+h2{font-size:25px;line-height:1.25;letter-spacing:-.02em;font-weight:700;margin:48px 0 14px}
+h3{font-size:18px;font-weight:650;margin:32px 0 10px}
+p,ul,ol{margin-bottom:16px;color:var(--dim)}
+li{margin-bottom:8px}ul,ol{padding-left:22px}
+strong{color:var(--tx);font-weight:650}
+kbd{font-family:ui-monospace,monospace;font-size:.85em;background:#ffffff12;border:1px solid var(--bd);border-bottom-width:2px;border-radius:6px;padding:2px 7px;color:var(--tx);white-space:nowrap}
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:22px 24px;margin:28px 0}
+.card p:last-child{margin-bottom:0}
+.cta{display:inline-block;background:linear-gradient(135deg,var(--pu),var(--cy));color:#0b0b10;font-weight:750;padding:13px 26px;border-radius:999px;margin:8px 0 4px}
+.cta:hover{text-decoration:none;opacity:.9}
+.note{font-size:14px;color:var(--dimmer)}
+figure{margin:28px 0}figure img{width:100%;height:auto;border-radius:12px;border:1px solid var(--bd);display:block}
+figcaption{font-size:13px;color:var(--dimmer);margin-top:9px;text-align:center}
+table{width:100%;border-collapse:collapse;margin:22px 0;font-size:15px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--bd);padding:9px 12px;text-align:left;color:var(--dim)}
+th{color:var(--tx);font-weight:650;background:#ffffff08}
+footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--bd);font-size:14px;color:var(--dimmer);display:flex;gap:18px;flex-wrap:wrap}
+.rel{margin-top:44px}.rel a{display:block;padding:11px 0;border-top:1px solid var(--bd);color:var(--tx);font-weight:600}
+</style>
+<script type="application/ld+json">[
+ {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "How to get dark mode in Google Sheets on desktop",
+  "description": "Google Sheets has no built-in dark mode on desktop. Here is why, what the workarounds actually do, and how to darken the whole grid including every cell.",
+  "url": "https://tjmanoj.github.io/darkwave/google-sheets-dark-mode/",
+  "dateModified": "23 August 2026",
+  "author": {
+   "@type": "Organization",
+   "name": "DarkWave",
+   "url": "https://tjmanoj.github.io/darkwave/"
+  },
+  "publisher": {
+   "@type": "Organization",
+   "name": "DarkWave",
+   "url": "https://tjmanoj.github.io/darkwave/"
+  },
+  "mainEntityOfPage": {
+   "@type": "WebPage",
+   "@id": "https://tjmanoj.github.io/darkwave/google-sheets-dark-mode/"
+  }
+ },
+ {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+   {
+    "@type": "Question",
+    "name": "Does Google Sheets have a built-in dark mode on desktop?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "No. As of August 2026 dark mode exists only in the Google Sheets mobile apps for Android and iOS. On the web there is no setting for it, and enabling your operating system dark mode does not change Sheets \u2014 it still reports a light colour scheme and renders a white grid."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Why has Google not added it?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "The stated obstacle is that a spreadsheet is not just text. Cell fills, conditional formatting and chart colours all carry meaning, and naively darkening the sheet would change them. That is a real problem, and it is the same problem every extension has to solve."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Will dark mode change my cell colours?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "A filter-based extension shifts them, because it transforms the rendered pixels rather than the underlying values. Your data is never touched \u2014 only how it is displayed on your screen, only in your browser. Nobody you share the sheet with sees any difference."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Why do most dark mode extensions leave the Sheets grid white?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "Because Sheets draws its cells into a single HTML canvas element rather than as ordinary page elements. Extensions that recolour elements one by one have nothing to recolour \u2014 the grid is one opaque rectangle to them, so the toolbar goes dark and the cells stay blinding white."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Is there a way to do it without an extension?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "Not properly. Chrome's experimental \"Auto Dark Mode for Web Contents\" flag at chrome://flags leaves the Sheets canvas untouched for the same reason, and Google warns the flag is unsupported. Printing to PDF and inverting, or turning down your monitor brightness, are the only extension-free options and neither is practical for daily work."
+    }
+   }
+  ]
+ }
+]</script>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><span class="mk"></span><a href="../">DarkWave</a></nav>
+<h1>How to get dark mode in Google Sheets on desktop</h1>
+<p class="lede">Sheets has no native dark mode on the web &mdash; only in the mobile apps. Here is the honest reason why, and what actually works on a computer.</p>
+<p class="meta">Updated 23 August 2026 &middot; free &middot; no account, no data collection</p>
+
+<h2>The short version</h2>
+<p>There is no setting to turn on. Sheets on the web ships one theme, and it is light.
+Your only real options are a browser extension or a system-wide colour inversion that
+affects everything on your screen.</p>
+
+<h2>Why the grid is the hard part</h2>
+<p>This is the detail that explains why so many dark mode extensions half-work on Sheets,
+and it is worth understanding before you install anything.</p>
+<p><strong>Sheets renders its cell grid into a single <code>&lt;canvas&gt;</code> element.</strong>
+Not a table, not a grid of divs &mdash; one drawing surface that the page paints pixels onto.
+An extension that works by recolouring page elements sees one opaque rectangle and can do
+nothing with it. That is why the usual result is a dark toolbar, dark menus, and a grid
+that is still white.</p>
+<p>Dark Reader, the most widely used extension in this category, force-enables its
+whole-page filter mode for <code>docs.google.com</code> for exactly this reason, and its
+maintainers have closed canvas-quality issues as not fixable. Anyone claiming perfect
+per-cell theming on Sheets is overstating it.</p>
+
+<figure>
+<img src="../images/slide1.png" alt="Google Sheets shown in dark mode with the cell grid darkened" loading="lazy" width="1280" height="800">
+<figcaption>The whole sheet dark, not just the toolbar &mdash; cells, row and column headers included.</figcaption>
+</figure>
+
+<h2>What actually works, and what it costs</h2>
+<table>
+<tr><th>Approach</th><th>Grid goes dark?</th><th>Trade-off</th></tr>
+<tr><td>An extension that filters the whole page</td><td>Yes</td><td>Cell fills and conditional-formatting colours shift hue</td></tr>
+<tr><td>An extension that recolours elements</td><td>No</td><td>Toolbar darkens, grid stays white</td></tr>
+<tr><td><code>chrome://flags</code> auto dark mode</td><td>No</td><td>Skips the canvas; Chrome documents the flag as unsupported</td></tr>
+<tr><td>OS-level invert (macOS, Windows)</td><td>Yes</td><td>Inverts every application on your machine</td></tr>
+</table>
+<p>The honest summary: a filter gets you a genuinely dark spreadsheet, and the price is
+that coloured cells are no longer the exact colours you set. If your workflow depends on
+precise fill colours, keep a light tab for that sheet &mdash; which is a single keystroke
+below.</p>
+
+<h2>Setting it up with DarkWave</h2>
+<ol>
+<li><strong>Install it.</strong> Every site is dark straight away; there is nothing to switch on.</li>
+<li><strong>Open a spreadsheet.</strong> The grid, the row and column headers and the frozen panes all darken together.</li>
+<li><strong>Tune it.</strong> Click the moon icon in your toolbar for brightness and contrast, or pick one of four presets. <em>Midnight</em> suits long sessions; <em>Abyss</em> is true black for OLED screens.</li>
+<li><strong>Keep an escape hatch.</strong> <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> (<kbd>&#8997;</kbd>+<kbd>&#8679;</kbd>+<kbd>B</kbd> on a Mac) turns DarkWave off for the current site only and reloads it untouched. Press it again to bring it back. Use it on any sheet where you need the real fill colours.</li>
+</ol>
+
+<div class="card">
+<p><strong>One thing worth knowing about images.</strong> Filter-based dark mode inverts
+everything, which would turn photos into negatives. DarkWave re-inverts images, video,
+logos and icons so they keep their real colours, and does the maths in a way that cannot
+clip near-white or near-black pixels &mdash; which is what leaves photos looking washed out
+in other tools.</p>
+</div>
+
+<h2>If you also use Docs and Gmail</h2>
+<p>Docs has the same canvas story and the same absence of a desktop setting; Gmail does
+have a theme picker but it does not cover everything. Both are handled by the same
+extension, so you do not need one per app.</p>
+
+<h2>Common questions</h2>
+<h3>Does Google Sheets have a built-in dark mode on desktop?</h3>
+<p>No. As of August 2026 dark mode exists only in the Google Sheets mobile apps for Android and iOS. On the web there is no setting for it, and enabling your operating system dark mode does not change Sheets — it still reports a light colour scheme and renders a white grid.</p>
+<h3>Why has Google not added it?</h3>
+<p>The stated obstacle is that a spreadsheet is not just text. Cell fills, conditional formatting and chart colours all carry meaning, and naively darkening the sheet would change them. That is a real problem, and it is the same problem every extension has to solve.</p>
+<h3>Will dark mode change my cell colours?</h3>
+<p>A filter-based extension shifts them, because it transforms the rendered pixels rather than the underlying values. Your data is never touched — only how it is displayed on your screen, only in your browser. Nobody you share the sheet with sees any difference.</p>
+<h3>Why do most dark mode extensions leave the Sheets grid white?</h3>
+<p>Because Sheets draws its cells into a single HTML canvas element rather than as ordinary page elements. Extensions that recolour elements one by one have nothing to recolour — the grid is one opaque rectangle to them, so the toolbar goes dark and the cells stay blinding white.</p>
+<h3>Is there a way to do it without an extension?</h3>
+<p>Not properly. Chrome's experimental "Auto Dark Mode for Web Contents" flag at chrome://flags leaves the Sheets canvas untouched for the same reason, and Google warns the flag is unsupported. Printing to PDF and inverting, or turning down your monitor brightness, are the only extension-free options and neither is practical for daily work.</p>
+<div class="card">
+<p><strong>DarkWave is free and open to install.</strong> It darkens Sheets, Docs and every
+other site you open, skips sites that already have their own dark theme, and makes no
+network requests at all.</p>
+<p><a class="cta" href="https://chromewebstore.google.com/detail/ngdneacppnmejcikcnkccpfdclclkioe" target="_blank" rel="noopener">Add to Chrome &mdash; free</a></p>
+</div>
+<div class="rel"><h2>Related guides</h2><a href="../google-docs-dark-mode/">Dark mode for Google Docs</a><a href="../gmail-dark-mode/">Dark mode for Gmail</a><a href="../dark-mode-every-website/">Dark mode for every website</a></div>
+<footer>
+<a href="../">DarkWave home</a><a href="../PRIVACY.md">Privacy</a>
+<span>Google Sheets, Google Docs and Gmail are trademarks of Google LLC. DarkWave is not affiliated with Google.</span>
+</footer>
+</div>
+</body>
+</html>
