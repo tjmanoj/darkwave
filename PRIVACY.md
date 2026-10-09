@@ -1,6 +1,6 @@
 # Privacy Policy — DarkWave Smart Dark Mode
 
-_Last updated: October 8, 2026_
+_Last updated: October 9, 2026_
 
 ## No Data Collection
 
@@ -15,7 +15,7 @@ DarkWave does not collect, store, transmit, or share any personal data.
 
 ## External Requests
 
-**None.** DarkWave makes no network requests of any kind. Opening the report form (below) is a page you choose to open in a tab, not a request made by the extension.
+**None.** DarkWave makes no network requests of any kind. Opening the report form or the Buy Me a Coffee page (below) is a page you choose to open in a tab, not a request made by the extension.
 
 As of version 1.1.0 this is unconditional. Earlier versions loaded web fonts from Google Fonts and site icons from Google's favicon service; the fonts are now bundled inside the extension, and site icons are read from the browser's own local favicon cache. Nothing about the pages you visit leaves your device.
 
@@ -27,7 +27,9 @@ These details travel only in the form's link, which Google Forms receives when t
 
 ## Third Parties
 
-DarkWave does not share any data with third parties. There are no analytics, tracking, or advertising SDKs included. The report form above is the only place DarkWave links to a third-party service, and only when you choose to open it.
+DarkWave does not share any data with third parties. There are no analytics, tracking, or advertising SDKs included.
+
+DarkWave links to two third-party pages, and opens them only when you click them: the report form above, and (from version 1.5.0) the developer's [Buy Me a Coffee](https://buymeacoffee.com/tjmanoj) page in the popup and the welcome guide. Nothing is added to the Buy Me a Coffee link, and DarkWave never loads Buy Me a Coffee's scripts; if you choose to support the developer there, Buy Me a Coffee's own privacy policy applies.
 
 ## Contact
 
